@@ -113,7 +113,7 @@ public class GrantImplementation implements GrantInterface {
             int fundedProjects = 0;
             for (ProjectInterface project : registeredProjects) {
 //                if (fundedProjects < numProjectsToFund && project.checkResearchCapacity()) {
-
+//TODO: valamit ide mert ez a checkresearchcapacity nem jo
                 if (fundedProjects < numProjectsToFund && project.getBudgetForYear(year) > project.getAllParticipants().size() * Constants.MAX_EMPLOYMENT_PER_AGENCY)
                 {
                     projectBudgets.put(project, budgetPerProject);
