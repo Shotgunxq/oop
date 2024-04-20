@@ -79,7 +79,7 @@ public class GrantImplementation implements GrantInterface {
 
     @Override
     public boolean registerProject(ProjectInterface project) {
-        if (state == GrantState.STARTED && project.getYear() == year && project.getParticipants().size() > 0) {
+        if (state == GrantState.STARTED && project.getStartingYear() == year && project.getAllParticipants().size() > 0) {
             registeredProjects.add(project);
             return true;
         }
@@ -112,7 +112,10 @@ public class GrantImplementation implements GrantInterface {
             int budgetPerProject = remainingBudget / numProjectsToFund;
             int fundedProjects = 0;
             for (ProjectInterface project : registeredProjects) {
-                if (fundedProjects < numProjectsToFund && project.checkResearchCapacity()) {
+//                if (fundedProjects < numProjectsToFund && project.checkResearchCapacity()) {
+
+                if (fundedProjects < numProjectsToFund && project.getBudgetForYear(year) > project.getAllParticipants().size() * Constants.MAX_EMPLOYMENT_PER_AGENCY)
+                {
                     projectBudgets.put(project, budgetPerProject);
                     remainingBudget -= budgetPerProject;
                     fundedProjects++;
@@ -122,6 +125,30 @@ public class GrantImplementation implements GrantInterface {
             }
             state = GrantState.EVALUATING;
         }
+
+
+//        if (state == GrantState.STARTED && !registeredProjects.isEmpty()) {
+//            int numProjectsToFund = Math.min(registeredProjects.size() / 2, registeredProjects.size());
+//
+//            // Calculate maximum total funding based on company resources
+//            int maxTotalFunding = Math.min(Constants.COMPANY_INIT_OWN_RESOURCES, numProjectsToFund * Constants.PROJECT_DURATION_IN_YEARS * Constants.MAX_FUNDING_PER_PROJECT); // Assuming Constants.MAX_FUNDING_PER_PROJECT is defined
+//
+//            // Calculate budget per project based on remaining resources and number of projects
+//            int budgetPerProject = Math.min(remainingBudget, maxTotalFunding / numProjectsToFund);
+//            int fundedProjects = 0;
+//            for (ProjectInterface project : registeredProjects) {
+////                if (fundedProjects < numProjectsToFund && project.checkResearchCapacity())
+//                    if (fundedProjects < numProjectsToFund && project.getBudgetForYear(year) > project.getAllParticipants().size() * Constants.MAX_EMPLOYMENT_PER_AGENCY)
+//                {
+//                    projectBudgets.put(project, budgetPerProject);
+//                    remainingBudget -= budgetPerProject;
+//                    fundedProjects++;
+//                } else {
+//                    projectBudgets.put(project, 0);
+//                }
+//            }
+//            state = GrantState.EVALUATING;
+//        }
     }
 
     @Override

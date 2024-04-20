@@ -23,8 +23,7 @@ public class DataFactory {
     public static LinkedList<GrantInterface> getGrants(int count) {
         LinkedList<GrantInterface> retVal = new LinkedList<>();
         for (int i = 0; i < count; i++) {
-          GrantInterface grant = new GrantImplementation();
-          retVal.add(grant);
+            GrantInterface grant = new GrantImplementation("grantName", 1, new AgencyImplementation("agencyName"), 1);          retVal.add(grant);
         }
         return retVal;
     }
