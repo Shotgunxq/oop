@@ -1,12 +1,17 @@
 package sk.stuba.fei.uim.oop.entity.grant;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 public class AgencyImplementation implements AgencyInterface {
     private String name;
+    private HashMap<Integer, Set<GrantInterface>> grantsByYear;
+
 
     public AgencyImplementation(String name) {
         this.name = name;
+        this.grantsByYear = new HashMap<>();
 
     }
 
@@ -20,16 +25,31 @@ public class AgencyImplementation implements AgencyInterface {
 
     @Override
     public void addGrant(GrantInterface gi, int year) {
-
+//        if (grants.containsKey(year)) {
+//            grants.get(year).add(gi);
+//        } else {
+//            grants.put(year, Set.of(gi));
+//        }
+        Set<GrantInterface> grants = grantsByYear.get(year);
+        if (grants == null) {
+            grants = new HashSet<>();
+            grantsByYear.put(year, grants);
+        }
+        grants.add(gi);
     }
 
     @Override
     public Set<GrantInterface> getAllGrants() {
-        return null;
+        Set<GrantInterface> allGrants = new HashSet<>();
+        for (Set<GrantInterface> grants : grantsByYear.values()) {
+            allGrants.addAll(grants);
+        }
+        return allGrants;
+
     }
 
     @Override
     public Set<GrantInterface> getGrantsIssuedInYear(int year) {
-        return null;
+        return grantsByYear.get(year);
     }
 }
