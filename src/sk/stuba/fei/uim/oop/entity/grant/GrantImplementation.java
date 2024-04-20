@@ -1,85 +1,139 @@
 package sk.stuba.fei.uim.oop.entity.grant;
-
+import sk.stuba.fei.uim.oop.utility.Constants;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 public class GrantImplementation implements GrantInterface {
+
+    private String identifier;
+    private int year;
+    private AgencyInterface agency;
+    private int budget;
+    private int remainingBudget;
+    private GrantState state;
+    private Set<ProjectInterface> registeredProjects;
+    private HashMap<ProjectInterface, Integer> projectBudgets;
+
+    public GrantImplementation(String identifier, int year, AgencyInterface agency, int budget) {
+        this.identifier = identifier;
+        this.year = year;
+        this.agency = agency;
+        this.budget = budget;
+        this.remainingBudget = budget;
+        this.state = GrantState.NEW;
+        this.projectBudgets = new HashMap<>();
+        this.registeredProjects = new HashSet<>();
+    }
+
     @Override
     public String getIdentifier() {
-        return null;
+        return identifier;
     }
 
     @Override
     public void setIdentifier(String identifier) {
-
+        this.identifier = identifier;
     }
 
     @Override
     public int getYear() {
-        return 0;
+        return year;
     }
 
     @Override
     public void setYear(int year) {
-
+        this.year = year;
     }
 
     @Override
     public AgencyInterface getAgency() {
-        return null;
+        return agency;
     }
 
     @Override
     public void setAgency(AgencyInterface agency) {
-
+        this.agency = agency;
     }
 
     @Override
     public int getBudget() {
-        return 0;
+        return budget;
     }
 
     @Override
     public void setBudget(int budget) {
-
+        this.budget = budget;
+        this.remainingBudget = budget;
     }
 
     @Override
     public int getRemainingBudget() {
-        return 0;
+        return remainingBudget;
     }
 
     @Override
     public int getBudgetForProject(ProjectInterface project) {
-        return 0;
+        return projectBudgets.getOrDefault(project, 0);
     }
 
     @Override
     public boolean registerProject(ProjectInterface project) {
+        if (state == GrantState.STARTED && project.getYear() == year && project.getParticipants().size() > 0) {
+            registeredProjects.add(project);
+            return true;
+        }
         return false;
+
+
     }
 
     @Override
     public Set<ProjectInterface> getRegisteredProjects() {
-        return null;
+        return registeredProjects;
     }
 
     @Override
     public GrantState getState() {
-        return null;
+        return state;
     }
 
     @Override
     public void callForProjects() {
-
+        if (state == GrantState.NEW) {
+            state = GrantState.STARTED;
+        }
     }
 
     @Override
     public void evaluateProjects() {
-
+        if (state == GrantState.STARTED && !registeredProjects.isEmpty()) {
+            int numProjectsToFund = Math.min(registeredProjects.size() / 2, registeredProjects.size());
+            int budgetPerProject = remainingBudget / numProjectsToFund;
+            int fundedProjects = 0;
+            for (ProjectInterface project : registeredProjects) {
+                if (fundedProjects < numProjectsToFund && project.checkResearchCapacity()) {
+                    projectBudgets.put(project, budgetPerProject);
+                    remainingBudget -= budgetPerProject;
+                    fundedProjects++;
+                } else {
+                    projectBudgets.put(project, 0);
+                }
+            }
+            state = GrantState.EVALUATING;
+        }
     }
 
     @Override
     public void closeGrant() {
+            if (state == GrantState.EVALUATING) {
+                for (ProjectInterface project : registeredProjects) {
+                    int allocatedBudget = projectBudgets.get(project);
+                    int yearlyBudget = allocatedBudget / Constants.PROJECT_DURATION_IN_YEARS;
+                    project.setBudgetForYear(year, yearlyBudget);
+                }
+                state = GrantState.CLOSED;
+            }
 
     }
 }
