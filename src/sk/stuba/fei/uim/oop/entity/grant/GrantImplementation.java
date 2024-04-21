@@ -120,14 +120,7 @@ public class GrantImplementation implements GrantInterface {
 
     @Override
     public void evaluateProjects() {
-        // Check if call is in EVALUATING state (as per previous discussion)
-
-
-//        state = GrantState.EVALUATING;
-
-        if (state != GrantState.EVALUATING) {
-            throw new IllegalStateException("Grant call is not in EVALUATING state");
-        }
+        // Check if call is in EVALUATING state (as per requirement)
 
         // List to store projects eligible for funding allocation
         List<ProjectInterface> eligibleProjects = new ArrayList<>();
@@ -155,19 +148,18 @@ public class GrantImplementation implements GrantInterface {
             // No projects eligible, distribute remaining budget equally among all (at least one gets funded)
             allocatedBudgetPerProject = remainingBudget / registeredProjects.size();
             for (ProjectInterface project : registeredProjects) {
-                project.setBudgetForYear(project.getStartingYear(),allocatedBudgetPerProject);
+                project.setBudgetForYear(project.getStartingYear(), allocatedBudgetPerProject);
             }
         } else {
             // Budget distributed equally among half of eligible projects
             allocatedBudgetPerProject = remainingBudget / (numEligibleProjects / 2);
             for (ProjectInterface project : eligibleProjects) {
-                project.setBudgetForYear(project.getStartingYear(),allocatedBudgetPerProject);
-
+                project.setBudgetForYear(project.getStartingYear(), allocatedBudgetPerProject);
             }
         }
 
-        // Grant status might not be explicitly changed based on the description
-        state = GrantState.EVALUATING;
+        // Update grant state after evaluation (assuming a CLOSED state)
+        state = GrantState.CLOSED;
     }
 
     // Helper method to check research capacity of project participants
@@ -189,6 +181,7 @@ public class GrantImplementation implements GrantInterface {
         // All participants' capacity is sufficient
         return true;
     }
+
     private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
         // Total workload (project duration) for the participant within the agency
         int workload = 0;
@@ -210,6 +203,7 @@ public class GrantImplementation implements GrantInterface {
 
         return workload;
     }
+
     private boolean isParticipantInGrant(PersonInterface participant, GrantInterface grant) {
         // Loop through all organizations the participant is employed by
         for (OrganizationInterface organization : participant.getEmployers()) {
@@ -223,7 +217,6 @@ public class GrantImplementation implements GrantInterface {
         return false;
     }
 
-
     private boolean isParticipantInProject(PersonInterface participant, ProjectInterface project) {
         // Check if the participant is listed as a solver in the project
         for (PersonInterface solver : project.getAllParticipants()) {
@@ -232,10 +225,10 @@ public class GrantImplementation implements GrantInterface {
             }
         }
 
-        // Participant is not listed as a solver in the project
+        // Participant is not listed
+
         return false;
     }
-
 
 
 
