@@ -90,8 +90,6 @@ public class GrantImplementation implements GrantInterface {
         return false;
     }
 
-
-
     public boolean isOrganizationRegistered(OrganizationInterface organization) {
         // Check if the organization is present in the registered list
         return registeredOrganizations.contains(organization);
@@ -126,18 +124,37 @@ public class GrantImplementation implements GrantInterface {
             if (checkCapacity(project)) {
                 eligibleProjects.add(project);
             } else {
-                project.setBudgetForYear(project.getStartingYear(), 0);
+                project.setBudgetForYear(project.getStartingYear(), 0); // Set budget to 0 for ineligible projects
             }
         }
 
-        int allocatedBudgetPerProject = remainingBudget / (eligibleProjects.isEmpty() ? registeredProjects.size() : eligibleProjects.size() / 2);
-
-        for (ProjectInterface project : eligibleProjects.isEmpty() ? registeredProjects : eligibleProjects) {
-            project.setBudgetForYear(project.getStartingYear(), allocatedBudgetPerProject);
+        // Calculate allocated budget per project (consider empty list scenario)
+        int numEligibleProjects = eligibleProjects.size();
+        int allocatedBudgetPerProject;
+        if (numEligibleProjects == 0) {
+            allocatedBudgetPerProject = 0; // No budget allocation if no projects are eligible
+        } else {
+            allocatedBudgetPerProject = remainingBudget / (numEligibleProjects / 2);
         }
 
-        state = GrantState.CLOSED;
+        // Update project budgets and notify organizations
+        for (ProjectInterface project : eligibleProjects) {
+            int projectDuration = project.getEndingYear() - project.getStartingYear() + 1;
+            int yearlyBudget = allocatedBudgetPerProject / projectDuration;
+
+            // Set budget for each year of the project
+            for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+                project.setBudgetForYear(year, yearlyBudget);
+            }
+
+            project.getApplicant().projectBudgetUpdateNotification(project, project.getStartingYear(), allocatedBudgetPerProject); // Total allocated budget
+        }
+
+//        state = GrantState.CLOSED;
+        state = GrantState.EVALUATING;
     }
+
+
 
     private boolean checkCapacity(ProjectInterface project) {
         int maxWorkloadPerParticipant = 2;
@@ -168,61 +185,6 @@ public class GrantImplementation implements GrantInterface {
     private boolean isParticipantInGrant(PersonInterface participant, GrantInterface grant) {
         return participant.getEmployers().stream().anyMatch(grant::isOrganizationRegistered);
     }
-
-
-
-
-
-
-
-
-
-//    @Override
-//    public void evaluateProjects() {
-//        // Check if call is in EVALUATING state (as per description)
-//        if (state != GrantState.EVALUATING) {
-//            throw new IllegalStateException("Grant call is not in EVALUATING state");
-//        }
-//
-//        // List to store projects eligible for funding allocation
-//        List<ProjectInterface> eligibleProjects = new ArrayList<>();
-//
-//        // Loop through registered projects
-//        for (ProjectInterface project : registeredProjects) {
-//            boolean validCapacity = true;
-//
-//            // Check solver capacity needs implementation (similar to previous example)
-//            // validCapacity = checkSolverCapacity(project); // Implement this method
-//
-//            // Add project to eligible list if capacity is valid (assuming implemented)
-//            if (validCapacity) {
-//                eligibleProjects.add(project);
-//            }
-//        }
-//
-//        // Budget allocation based on number of eligible projects (handle edge cases)
-//        int numProjects = eligibleProjects.size();
-//        int allocatedBudgetPerProject;
-//        if (numProjects == 0) {
-//            allocatedBudgetPerProject = 0; // No projects receive funding
-//        } else if (numProjects == 1) {
-//            allocatedBudgetPerProject = remainingBudget; // Single project receives entire budget
-//        } else {
-//            allocatedBudgetPerProject = remainingBudget / (numProjects / 2); // Budget divided equally among half of projects
-//        }
-//
-//        // Set budget for each eligible project across its duration
-//        for (ProjectInterface project : eligibleProjects) {
-//            int projectDuration = project.getEndingYear();
-//            for (int year = project.getStartingYear(); year < project.getStartingYear() + projectDuration; year++) {
-//                project.setBudgetForYear(year, allocatedBudgetPerProject);
-//            }
-//        }
-//
-//        // Update call status to EVALUATED
-//        state = GrantState.EVALUATING;
-//    }
-
 
     @Override
     public void closeGrant() {
