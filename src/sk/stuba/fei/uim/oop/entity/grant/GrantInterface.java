@@ -1,6 +1,8 @@
 package sk.stuba.fei.uim.oop.entity.grant;
 
 
+import sk.stuba.fei.uim.oop.entity.organization.OrganizationInterface;
+
 import java.util.Set;
 
 public interface GrantInterface {
@@ -105,5 +107,6 @@ public interface GrantInterface {
      */
     void closeGrant();
 
+    boolean isOrganizationRegistered(OrganizationInterface organization);
 
 }
