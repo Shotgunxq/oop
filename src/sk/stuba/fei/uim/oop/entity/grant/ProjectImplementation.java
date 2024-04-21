@@ -53,7 +53,19 @@ public class ProjectImplementation implements ProjectInterface {
 
     @Override
     public int getBudgetForYear(int year) {
-        return budgetsByYear.getOrDefault(year, 0);
+//        return budgetsByYear.getOrDefault(year, 0);
+        // Retrieve base budget allocated by grant agency
+        int baseBudget = budgetsByYear.getOrDefault(year,0);// ... logic to get base budget
+
+        // If project is submitted by a company, add co-financing
+        if (applicant instanceof OrganizationInterface) {
+            OrganizationInterface company = (OrganizationInterface) applicant;
+            // Call company method to retrieve co-financing for this project and year
+            int companyContribution = company.getProjectBudget(this);
+            baseBudget += companyContribution;
+        }
+
+        return baseBudget;
 
     }
 

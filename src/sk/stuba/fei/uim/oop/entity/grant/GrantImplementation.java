@@ -120,84 +120,45 @@ public class GrantImplementation implements GrantInterface {
 
     @Override
     public void evaluateProjects() {
-        // Check if call is in EVALUATING state (as per requirement)
-
-        // List to store projects eligible for funding allocation
         List<ProjectInterface> eligibleProjects = new ArrayList<>();
 
-        // Loop through registered projects in registration order
         for (ProjectInterface project : registeredProjects) {
-            boolean validCapacity = true;
-
-            // Check research capacity of participants (assuming a checkCapacity method)
-            validCapacity = checkCapacity(project);
-
-            // Add project to eligible list if capacity is valid
-            if (validCapacity) {
+            if (checkCapacity(project)) {
                 eligibleProjects.add(project);
             } else {
-                // Set funding to 0 for projects with capacity issues
                 project.setBudgetForYear(project.getStartingYear(), 0);
             }
         }
 
-        // Handle edge cases for budget allocation (at least one project funded)
-        int numEligibleProjects = eligibleProjects.size();
-        int allocatedBudgetPerProject;
-        if (numEligibleProjects == 0) {
-            // No projects eligible, distribute remaining budget equally among all (at least one gets funded)
-            allocatedBudgetPerProject = remainingBudget / registeredProjects.size();
-            for (ProjectInterface project : registeredProjects) {
-                project.setBudgetForYear(project.getStartingYear(), allocatedBudgetPerProject);
-            }
-        } else {
-            // Budget distributed equally among half of eligible projects
-            allocatedBudgetPerProject = remainingBudget / (numEligibleProjects / 2);
-            for (ProjectInterface project : eligibleProjects) {
-                project.setBudgetForYear(project.getStartingYear(), allocatedBudgetPerProject);
-            }
+        int allocatedBudgetPerProject = remainingBudget / (eligibleProjects.isEmpty() ? registeredProjects.size() : eligibleProjects.size() / 2);
+
+        for (ProjectInterface project : eligibleProjects.isEmpty() ? registeredProjects : eligibleProjects) {
+            project.setBudgetForYear(project.getStartingYear(), allocatedBudgetPerProject);
         }
 
-        // Update grant state after evaluation (assuming a CLOSED state)
         state = GrantState.CLOSED;
     }
 
-    // Helper method to check research capacity of project participants
     private boolean checkCapacity(ProjectInterface project) {
-        // Loop through all participants of the project
+        int maxWorkloadPerParticipant = 2;
+
         for (PersonInterface participant : project.getAllParticipants()) {
-            // Get participant's workload across all their projects within this agency
-            int participantWorkload = getParticipantWorkload(participant, this);
-
-            // Define maximum workload allowed per participant per agency (replace 2 with your actual constant)
-            int maxWorkloadPerParticipant = 2;
-
-            // Check if participant's workload exceeds the limit for this project duration
-            int projectDuration = project.getEndingYear();
-            if (participantWorkload + projectDuration > maxWorkloadPerParticipant) {
-                return false; // Capacity check fails for this project
+            if (getParticipantWorkload(participant) + project.getEndingYear() > maxWorkloadPerParticipant) {
+                return false;
             }
         }
-        // All participants' capacity is sufficient
         return true;
     }
 
-    private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
-        // Total workload (project duration) for the participant within the agency
+    private int getParticipantWorkload(PersonInterface participant) {
         int workload = 0;
 
-        // Loop through all grants managed by the agency
         for (GrantInterface currentGrant : agency.getAllGrants()) {
-            // Check if the participant is involved in the current grant
             if (isParticipantInGrant(participant, currentGrant)) {
-                // Loop through registered projects within the current grant
-                for (ProjectInterface project : currentGrant.getRegisteredProjects()) {
-                    // Check if the participant is involved in this specific project
-                    if (isParticipantInProject(participant, project)) {
-                        // Add the project duration to the workload
-                        workload += project.getEndingYear();
-                    }
-                }
+                workload += currentGrant.getRegisteredProjects().stream()
+                        .filter(project -> project.getAllParticipants().contains(participant))
+                        .mapToInt(ProjectInterface::getEndingYear)
+                        .sum();
             }
         }
 
@@ -205,29 +166,7 @@ public class GrantImplementation implements GrantInterface {
     }
 
     private boolean isParticipantInGrant(PersonInterface participant, GrantInterface grant) {
-        // Loop through all organizations the participant is employed by
-        for (OrganizationInterface organization : participant.getEmployers()) {
-            // Check if the organization is registered for the given grant
-            if (grant.isOrganizationRegistered(organization)) {
-                return true; // Participant is involved (employed by a registered organization)
-            }
-        }
-
-        // Participant is not employed by any organization registered for the grant
-        return false;
-    }
-
-    private boolean isParticipantInProject(PersonInterface participant, ProjectInterface project) {
-        // Check if the participant is listed as a solver in the project
-        for (PersonInterface solver : project.getAllParticipants()) {
-            if (participant.equals(solver)) {
-                return true; // Participant is a solver in the project
-            }
-        }
-
-        // Participant is not listed
-
-        return false;
+        return participant.getEmployers().stream().anyMatch(grant::isOrganizationRegistered);
     }
 
 
