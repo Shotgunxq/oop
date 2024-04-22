@@ -16,6 +16,8 @@ public class ProjectImplementation implements ProjectInterface {
     private OrganizationInterface applicant;
     private Set<PersonInterface> participants;
     private HashMap<Integer, Integer> budgetsByYear;
+    private int workloadPerYear;
+
 
     public ProjectImplementation() {
         this.projectName = projectName;
@@ -105,4 +107,21 @@ public class ProjectImplementation implements ProjectInterface {
     public void setApplicant(OrganizationInterface applicant) {
         this.applicant = applicant;
     }
+
+
+    @Override
+    public int getWorkloadPerYear() {
+        return workloadPerYear;
+    }
+
+    @Override
+    public int getDuration() {
+        return Constants.PROJECT_DURATION_IN_YEARS;
+    }
+
+    // Possible setter for workloadPerYear if needed
+    public void setWorkloadPerYear(int workloadPerYear) {
+        this.workloadPerYear = workloadPerYear;
+    }
+
 }

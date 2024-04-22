@@ -6,6 +6,7 @@ import sk.stuba.fei.uim.oop.entity.organization.OrganizationInterface;
 import sk.stuba.fei.uim.oop.entity.organization.UniversityImplementation;
 import sk.stuba.fei.uim.oop.entity.people.PersonImplementation;
 import sk.stuba.fei.uim.oop.entity.people.PersonInterface;
+import sk.stuba.fei.uim.oop.utility.Constants;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,7 +27,7 @@ public class DataFactory {
         String identifier = "GR2024XYZ"; // Example identifier
         int year = 2024; // Example year
         AgencyInterface agency = new AgencyImplementation("Agency"); // Example agency implementation
-        int budget = 1000000; // Example budget
+        int budget = Constants.COMPANY_INIT_OWN_RESOURCES; // Example budget
 
         LinkedList<GrantInterface> retVal = new LinkedList<>();
         for (int i = 0; i < count; i++) {

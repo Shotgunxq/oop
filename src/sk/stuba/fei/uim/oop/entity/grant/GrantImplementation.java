@@ -149,38 +149,64 @@ public class GrantImplementation implements GrantInterface {
 
             project.getApplicant().projectBudgetUpdateNotification(project, project.getStartingYear(), allocatedBudgetPerProject); // Total allocated budget
         }
-
-//        state = GrantState.CLOSED;
-        state = GrantState.EVALUATING;
+        state = GrantState.CLOSED;
+//        state = GrantState.EVALUATING;
     }
 
 
-
+//    private boolean checkCapacity(ProjectInterface project) {
+//        int maxWorkloadPerYear = 5;  // Adjust this value based on your requirements
+//        int maxOverallWorkload = 10;  // Optional: Overall workload limit across all grants (default: no limit)
+//
+//        for (PersonInterface participant : project.getAllParticipants()) {
+//            int participantWorkload = getParticipantWorkload(participant, this);
+//            int projectWorkloadPerYear = project.getWorkloadPerYear();
+//
+//            // Check workload per year for the project
+//            for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+//                if (participantWorkload + projectWorkloadPerYear > maxWorkloadPerYear) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
+//    }
     private boolean checkCapacity(ProjectInterface project) {
         int maxWorkloadPerParticipant = 2;
 
         for (PersonInterface participant : project.getAllParticipants()) {
-            if (getParticipantWorkload(participant) + project.getEndingYear() > maxWorkloadPerParticipant) {
+            if (getParticipantWorkload(participant, this) + project.getEndingYear() > maxWorkloadPerParticipant) {
                 return false;
             }
         }
         return true;
     }
 
-    private int getParticipantWorkload(PersonInterface participant) {
+    private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
         int workload = 0;
 
-        for (GrantInterface currentGrant : agency.getAllGrants()) {
-            if (isParticipantInGrant(participant, currentGrant)) {
-                workload += currentGrant.getRegisteredProjects().stream()
-                        .filter(project -> project.getAllParticipants().contains(participant))
-                        .mapToInt(ProjectInterface::getEndingYear)
-                        .sum();
+        for (ProjectInterface project : grant.getRegisteredProjects()) {
+            if (project.getAllParticipants().contains(participant)) {
+                workload += project.getWorkloadPerYear() * project.getDuration();  // Assuming workloadPerYear is available in the project
             }
         }
 
         return workload;
     }
+//    private int getParticipantWorkload(PersonInterface participant) {
+//        int workload = 0;
+//
+//        for (GrantInterface currentGrant : agency.getAllGrants()) {
+//            if (isParticipantInGrant(participant, currentGrant)) {
+//                workload += currentGrant.getRegisteredProjects().stream()
+//                        .filter(project -> project.getAllParticipants().contains(participant))
+//                        .mapToInt(ProjectInterface::getEndingYear)
+//                        .sum();
+//            }
+//        }
+//
+//        return workload;
+//    }
 
     private boolean isParticipantInGrant(PersonInterface participant, GrantInterface grant) {
         return participant.getEmployers().stream().anyMatch(grant::isOrganizationRegistered);
