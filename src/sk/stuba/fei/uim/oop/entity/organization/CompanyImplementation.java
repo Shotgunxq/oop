@@ -6,22 +6,18 @@ import sk.stuba.fei.uim.oop.entity.people.PersonInterface;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.util.Calendar.YEAR;
-
 public class CompanyImplementation implements OrganizationInterface {
 
     private String name;
     private Set<PersonInterface> employees;
     private Set<ProjectInterface> projects;
-    private int initialBudget;
-    private int remainingBudget;
+    private int initialOwnResources; // COMPANY_INIT_OWN_RESOURCES
 
-    public CompanyImplementation(String name, Set<PersonInterface> employees, Set<ProjectInterface> projects, int initialBudget, int remainingBudget) {
+    public CompanyImplementation(String name, Set<PersonInterface> employees, Set<ProjectInterface> projects, int initialOwnResources) {
         this.name = name;
         this.employees = employees;
         this.projects = projects;
-        this.initialBudget = initialBudget;
-        this.remainingBudget = remainingBudget;
+        this.initialOwnResources = initialOwnResources;
     }
 
 
@@ -75,27 +71,45 @@ public class CompanyImplementation implements OrganizationInterface {
 
     @Override
     public int getProjectBudget(ProjectInterface pi) {
-//        if (!projects.contains(pi)) {
-//            return 0;
-//        }
-//        // Consider grant allocation and remaining company budget
-//        int grantAllocation = pi.getTotalBudget(); // Get grant agency allocation (implementation detail)
-//        return Math.min(grantAllocation, remainingBudget);
-
-
         if (this instanceof OrganizationInterface) {
             OrganizationInterface company = (OrganizationInterface) this;
-            // Call company method to retrieve co-financing for this project
-            int companyContribution = company.getProjectBudget(pi);
+
+            // Project funding needs for the year (replace with your calculation logic)
+            int projectNeeds = calculateProjectNeeds(pi);
+
+            // Available company resources considering co-funded projects
+            int availableResources = Math.max(0, initialOwnResources - getBudgetSpentOnProjects());
+
+            // Company contribution capped by project needs and available resources
+            int companyContribution = Math.min(projectNeeds, availableResources);
+
+            // Update remaining resources after co-financing
+            initialOwnResources -= companyContribution;
+
             // Retrieve grant-allocated budget and add company contribution
-            int baseBudget = pi.getBudgetForYear(YEAR); // Assuming YEAR is the year
+            int baseBudget = pi.getBudgetForYear(java.util.Calendar.YEAR); // Assuming YEAR is the year
             return baseBudget + companyContribution;
         } else {
             // University case, return only grant-allocated budget
-            return pi.getBudgetForYear(YEAR);
+            return pi.getBudgetForYear(java.util.Calendar.YEAR);
         }
     }
 
+    // Helper method to calculate project funding needs (implementation details)
+    private int calculateProjectNeeds(ProjectInterface pi) {
+        // ... replace with your logic to determine project funding needs for the year
+        return 10000; // Placeholder value for demonstration
+    }
+
+    // Helper method to get total budget spent on co-funded projects (implementation details)
+    private int getBudgetSpentOnProjects() {
+        int totalSpent = 0;
+        for (ProjectInterface project : projects) {
+            // Logic to determine company contribution for each project and year
+            totalSpent += getProjectBudget(project) - project.getBudgetForYear(java.util.Calendar.YEAR);
+        }
+        return totalSpent;
+    }
 
     @Override
     public int getBudgetForAllProjects() {
@@ -106,23 +120,7 @@ public class CompanyImplementation implements OrganizationInterface {
         return totalBudget;
     }
 
-//    @Override
-//    public void projectBudgetUpdateNotification(ProjectInterface pi, int year, int budgetForYear) {
-//        // Update remaining budget
-//        remainingBudget -= budgetForYear;
-//    }
-@Override
-public void projectBudgetUpdateNotification(ProjectInterface pi, int year, int budgetForYear) {
-    pi.setBudgetForYear(year, budgetForYear); // Update project budget
-
-    if (this instanceof OrganizationInterface) {
-        OrganizationInterface company = (OrganizationInterface) this;
-        // Company co-financing logic (if applicable)
-        int companyContribution = company.getProjectBudget(pi);
-        if (companyContribution > 0) {
-            pi.setBudgetForYear(year, budgetForYear + companyContribution);
-            pi.setBudgetForYear(year, budgetForYear + companyContribution); // Notify project about increased budget
-        }
-    }
-    }
-}
+    @Override
+    public void projectBudgetUpdateNotification(ProjectInterface pi, int year, int budgetForYear) {
+        pi.setBudgetForYear(year, budgetForYear); // Update project budget
+    }}

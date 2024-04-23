@@ -68,11 +68,11 @@ public class DataFactory {
         int initialBudget = 1000000; // Example initial budget
         int remainingBudget = 750000; // Example remaining budget
 
-        CompanyImplementation company = new CompanyImplementation(name, employees, projects, initialBudget, remainingBudget);
+        CompanyImplementation company = new CompanyImplementation(name, employees, projects, initialBudget);
 
         LinkedList<OrganizationInterface> retVal = new LinkedList<>();
         for (int i = 0; i < count; i++) {
-            CompanyImplementation org = new CompanyImplementation(name, employees, projects, initialBudget, remainingBudget);
+            CompanyImplementation org = new CompanyImplementation(name, employees, projects, initialBudget);
             retVal.add(org);
         }
         return retVal;
