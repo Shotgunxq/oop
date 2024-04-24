@@ -22,6 +22,7 @@ public class GrantImplementation implements GrantInterface {
         this.registeredProjects = new HashSet<>();
         this.projectBudgets = new HashMap<>();
         this.registeredOrganizations = new ArrayList<>();
+
     }
 
 
@@ -87,11 +88,6 @@ public class GrantImplementation implements GrantInterface {
     }
 
     @Override
-    public boolean isOrganizationRegistered(OrganizationInterface organization) {
-        return registeredOrganizations.contains(organization);
-    }
-
-    @Override
     public Set<ProjectInterface> getRegisteredProjects() {
         return Set.copyOf(registeredProjects);
     }
@@ -109,11 +105,72 @@ public class GrantImplementation implements GrantInterface {
     @Override
     public void evaluateProjects() {
         List<ProjectInterface> eligibleProjects = new ArrayList<>();
+
+        for (ProjectInterface project : registeredProjects) {
+            if (checkCapacity(project)) { // Check solver capacity
+                eligibleProjects.add(project);
+            } else {
+                project.setBudgetForYear(project.getStartingYear(), 0); // Set budget to 0 for ineligible projects
+            }
+        }
+
+        // Calculate allocated budget per project (consider empty list scenario)
+        int numEligibleProjects = eligibleProjects.size();
+        int allocatedBudgetPerProject;
+        if (numEligibleProjects == 0) {
+            allocatedBudgetPerProject = 0; // No budget allocation if no projects are eligible
+        } else if (numEligibleProjects == 1) {
+            allocatedBudgetPerProject = budget; // Entire budget for the only project
+        } else {
+            allocatedBudgetPerProject = remainingBudget / (numEligibleProjects / 2);
+        }
+
+        // Update project budgets and notify organizations
+        for (int i = 0; i < Math.min(numEligibleProjects, eligibleProjects.size()); i++) { // Handle potential list modification
+            ProjectInterface project = eligibleProjects.get(i);
+            int projectDuration = project.getEndingYear() - project.getStartingYear() + 1;
+            int yearlyBudget = allocatedBudgetPerProject / projectDuration;
+
+            // Set budget for each year of the project
+            for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+                project.setBudgetForYear(year, yearlyBudget);
+            }
+
+            // Update projectBudgets HashMap with total allocated budget
+            projectBudgets.put(project, allocatedBudgetPerProject);
+
+            project.getApplicant().projectBudgetUpdateNotification(project, project.getStartingYear(), allocatedBudgetPerProject); // Total allocated budget
+        }
+
+        state = GrantState.CLOSED; // Update state after evaluation and allocation
     }
+
 
     @Override
     public void closeGrant(){
         state = GrantState.CLOSED;
     }
+    private boolean checkCapacity(ProjectInterface project) {
+        int maxWorkloadPerParticipant = 2; // Adjust this value based on your requirements
 
+        for (PersonInterface participant : project.getAllParticipants()) {
+            int participantWorkload = getParticipantWorkload(participant, this);
+            if (participantWorkload + project.getEndingYear() > maxWorkloadPerParticipant) {
+                return false; // Solver capacity exceeded
+            }
+        }
+        return true;
+    }
+
+    private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
+        int workload = 0;
+
+        for (ProjectInterface registeredProject : grant.getRegisteredProjects()) {
+            if (registeredProject.getAllParticipants().contains(participant)) {
+                workload += registeredProject.getWorkloadPerYear() * registeredProject.getDuration();  // Assuming workloadPerYear is available in the project
+            }
+        }
+
+        return workload;
+    }
 }

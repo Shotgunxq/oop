@@ -107,7 +107,4 @@ public interface GrantInterface {
      */
     void closeGrant();
 
-    boolean isOrganizationRegistered(OrganizationInterface organization);
-
-
 }
