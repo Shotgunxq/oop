@@ -20,10 +20,10 @@ public class ProjectImplementation implements ProjectInterface {
 
 
     public ProjectImplementation() {
-        this.projectName = projectName;
-        this.startingYear = startingYear;
+        this.projectName = getProjectName();
+        this.startingYear = getStartingYear();
 //        this.endingYear = endingYear;
-        this.applicant = applicant;
+        this.applicant = getApplicant();
         this.participants = new HashSet<>();
         this.budgetsByYear = new HashMap<>();
     }

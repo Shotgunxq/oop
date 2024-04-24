@@ -12,10 +12,10 @@ public class UniversityImplementation implements OrganizationInterface {
     private Set<PersonInterface> employees;
     private Set<ProjectInterface> projects;
 
-    public UniversityImplementation(String name) {
-        this.name = name;
-        this.employees = new HashSet<>();
-        this.projects = new HashSet<>();
+    public UniversityImplementation() {
+        this.name = getName();
+        this.employees = getEmployees();
+        this.projects = getAllProjects();
     }
 
     @Override

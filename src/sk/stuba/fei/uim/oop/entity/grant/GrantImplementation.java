@@ -17,12 +17,12 @@ public class GrantImplementation implements GrantInterface {
     private HashMap<ProjectInterface, Integer> projectBudgets;
     private List<OrganizationInterface> registeredOrganizations;
 
-    public GrantImplementation(String identifier, int year, AgencyInterface agency, int budget) {
-        this.identifier = identifier;
-        this.year = year;
-        this.agency = agency;
-        this.budget = budget;
-        this.remainingBudget = budget;
+    public GrantImplementation() {
+        this.year= getYear();
+        this.identifier= getIdentifier();
+        this.agency = getAgency();
+        this.budget = getBudget();
+        this.remainingBudget = getBudget();
         this.state = GrantState.NEW;
         this.projectBudgets = new HashMap<>();
         this.registeredProjects = new HashSet<>();

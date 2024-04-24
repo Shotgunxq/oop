@@ -2,6 +2,7 @@ package sk.stuba.fei.uim.oop.entity.organization;
 
 import sk.stuba.fei.uim.oop.entity.grant.ProjectInterface;
 import sk.stuba.fei.uim.oop.entity.people.PersonInterface;
+import sk.stuba.fei.uim.oop.utility.Constants;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,11 +14,11 @@ public class CompanyImplementation implements OrganizationInterface {
     private Set<ProjectInterface> projects;
     private int initialOwnResources; // COMPANY_INIT_OWN_RESOURCES
 
-    public CompanyImplementation(String name, Set<PersonInterface> employees, Set<ProjectInterface> projects, int initialOwnResources) {
-        this.name = name;
-        this.employees = employees;
-        this.projects = projects;
-        this.initialOwnResources = initialOwnResources;
+    public CompanyImplementation() {
+        this.name = getName();
+        this.employees = getEmployees();
+        this.projects = getAllProjects();
+        this.initialOwnResources = Constants.COMPANY_INIT_OWN_RESOURCES;
     }
 
 
