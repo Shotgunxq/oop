@@ -12,20 +12,16 @@ public class ProjectImplementation implements ProjectInterface {
 
     private String projectName;
     private int startingYear;
-//    private int endingYear;
     private OrganizationInterface applicant;
     private Set<PersonInterface> participants;
     private HashMap<Integer, Integer> budgetsByYear;
     private int workloadPerYear;
-
+    private int companyCoFunding; // Added field to store company co-funding
 
     public ProjectImplementation() {
-        this.projectName = projectName;
-        this.startingYear = startingYear;
-//        this.endingYear = endingYear;
-        this.applicant = applicant;
         this.participants = new HashSet<>();
         this.budgetsByYear = new HashMap<>();
+        this.companyCoFunding = 0; // Initialize co-funding to 0
     }
 
     @Override
@@ -50,25 +46,22 @@ public class ProjectImplementation implements ProjectInterface {
 
     @Override
     public int getEndingYear() {
-        return startingYear + Constants.PROJECT_DURATION_IN_YEARS - 1;
+        return startingYear + Constants.PROJECT_DURATION_IN_YEARS;
     }
 
     @Override
     public int getBudgetForYear(int year) {
-//        return budgetsByYear.getOrDefault(year, 0);
         // Retrieve base budget allocated by grant agency
-        int baseBudget = budgetsByYear.getOrDefault(year,0);// ... logic to get base budget
+        int baseBudget = budgetsByYear.getOrDefault(year, 0);
 
         // If project is submitted by a company, add co-financing
         if (applicant instanceof OrganizationInterface) {
             OrganizationInterface company = (OrganizationInterface) applicant;
-            // Call company method to retrieve co-financing for this project and year
-            int companyContribution = company.getProjectBudget(this);
-            baseBudget += companyContribution;
+            // No need to call company method here, use the stored value
+            baseBudget += companyCoFunding;
         }
 
         return baseBudget;
-
     }
 
     @Override
@@ -95,7 +88,6 @@ public class ProjectImplementation implements ProjectInterface {
     @Override
     public Set<PersonInterface> getAllParticipants() {
         return participants;
-
     }
 
     @Override
@@ -107,7 +99,6 @@ public class ProjectImplementation implements ProjectInterface {
     public void setApplicant(OrganizationInterface applicant) {
         this.applicant = applicant;
     }
-
 
     @Override
     public int getWorkloadPerYear() {
@@ -124,4 +115,13 @@ public class ProjectImplementation implements ProjectInterface {
         this.workloadPerYear = workloadPerYear;
     }
 
+    // Added method to get company co-funding
+    public int getCompanyCoFunding() {
+        return companyCoFunding;
+    }
+
+    // Added method to set company co-funding
+    public void setCompanyCoFunding(int companyCoFunding) {
+        this.companyCoFunding = companyCoFunding;
+    }
 }

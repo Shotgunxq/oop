@@ -9,8 +9,8 @@ public class AgencyImplementation implements AgencyInterface {
     private HashMap<Integer, Set<GrantInterface>> grantsByYear;
 
 
-    public AgencyImplementation(String name) {
-        this.name = name;
+    public AgencyImplementation() {
+
         this.grantsByYear = new HashMap<>();
 
     }

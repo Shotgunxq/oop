@@ -17,7 +17,7 @@ public class DataFactory {
     public static LinkedList<AgencyInterface> getAgencies(int count) {
         LinkedList<AgencyInterface> retVal = new LinkedList<>();
         for (int i = 0; i < count; i++) {
-            AgencyInterface agency = new AgencyImplementation( "Agency " + i);
+            AgencyInterface agency = new AgencyImplementation();
             retVal.add(agency);
         }
         return retVal;
@@ -26,12 +26,12 @@ public class DataFactory {
     public static LinkedList<GrantInterface> getGrants(int count) {
         String identifier = "GR2024XYZ"; // Example identifier
         int year = 2024; // Example year
-        AgencyInterface agency = new AgencyImplementation("Agency"); // Example agency implementation
+        AgencyInterface agency = new AgencyImplementation(); // Example agency implementation
         int budget = Constants.COMPANY_INIT_OWN_RESOURCES; // Example budget
 
         LinkedList<GrantInterface> retVal = new LinkedList<>();
         for (int i = 0; i < count; i++) {
-            GrantImplementation grant = new GrantImplementation(identifier, year, agency, budget);
+            GrantImplementation grant = new GrantImplementation();
             retVal.add(grant);
         }
         return retVal;
@@ -49,7 +49,7 @@ public class DataFactory {
     public static LinkedList<OrganizationInterface> getUniversities(int count) {
         LinkedList<OrganizationInterface> retVal = new LinkedList<>();
         for (int i = 0; i < count; i++) {
-            OrganizationInterface org = new UniversityImplementation("STU");
+            OrganizationInterface org = new UniversityImplementation();
             retVal.add(org);
         }
         return retVal;
@@ -68,11 +68,11 @@ public class DataFactory {
         int initialBudget = 1000000; // Example initial budget
         int remainingBudget = 750000; // Example remaining budget
 
-        CompanyImplementation company = new CompanyImplementation(name, employees, projects, initialBudget);
+        CompanyImplementation company = new CompanyImplementation();
 
         LinkedList<OrganizationInterface> retVal = new LinkedList<>();
         for (int i = 0; i < count; i++) {
-            CompanyImplementation org = new CompanyImplementation(name, employees, projects, initialBudget);
+            CompanyImplementation org = new CompanyImplementation();
             retVal.add(org);
         }
         return retVal;
@@ -81,7 +81,7 @@ public class DataFactory {
     public static LinkedList<PersonInterface> getPersons(int count) {
         LinkedList<PersonInterface> retVal = new LinkedList<>();
         for (int i = 0; i < count; i++) {
-            PersonInterface person = new PersonImplementation("Bence", "Trakany", new HashSet<>());
+            PersonInterface person = new PersonImplementation();
             retVal.add(person);
         }
         return retVal;

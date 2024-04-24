@@ -12,8 +12,7 @@ public class UniversityImplementation implements OrganizationInterface {
     private Set<PersonInterface> employees;
     private Set<ProjectInterface> projects;
 
-    public UniversityImplementation(String name) {
-        this.name = name;
+    public UniversityImplementation() {
         this.employees = new HashSet<>();
         this.projects = new HashSet<>();
     }
@@ -31,12 +30,12 @@ public class UniversityImplementation implements OrganizationInterface {
     @Override
     public void addEmployee(PersonInterface p, int employment) {
         // You can add logic to validate employment and store it if needed
-        employees.add(p);
+        this.employees.add(p);
     }
 
     @Override
     public Set<PersonInterface> getEmployees() {
-        return Set.copyOf(employees); // Return an unmodifiable copy
+        return (employees); // Return an unmodifiable copy
     }
 
     @Override
@@ -47,7 +46,7 @@ public class UniversityImplementation implements OrganizationInterface {
 
     @Override
     public Set<ProjectInterface> getAllProjects() {
-        return Set.copyOf(projects); // Return an unmodifiable copy
+        return (projects); // Return an unmodifiable copy
     }
 
     @Override
