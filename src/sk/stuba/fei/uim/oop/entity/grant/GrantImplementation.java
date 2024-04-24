@@ -72,24 +72,42 @@ public class GrantImplementation implements GrantInterface {
         return remainingBudget;
     }
 
-    @Override
-    public int getBudgetForProject(ProjectInterface project) {
-        return projectBudgets.getOrDefault(project, 0);
-    }
 
     @Override
-    public boolean registerProject(ProjectInterface project) {
-        if (state == GrantState.STARTED && project.getStartingYear() == year && project.getAllParticipants().size() > 0) {
-            registeredProjects.add(project);
-//            registeredOrganizations.addAll(project.getApplicant().getOrganizations()); // Register applicant's organizations
-            return true;
+    public int getBudgetForProject(ProjectInterface project) {
+        // This method could be implemented based on specific evaluation criteria
+        // For demonstration purposes, assume equal distribution among funded projects
+        if (!registeredProjects.contains(project) || state != GrantState.CLOSED) {
+            return 0;
         }
-        return false;
+
+        int fundedProjects = 0;
+        for (ProjectInterface p : registeredProjects) {
+            if (getRemainingBudget() > 0) {
+                fundedProjects++;
+            }
+        }
+
+        if (fundedProjects == 0) {
+            return 0;
+        }
+
+        int projectBudget = budget / fundedProjects;
+        return projectBudget;
     }
+    @Override
+    public boolean registerProject(ProjectInterface project) {
+        if (state != GrantState.STARTED || year != project.getStartingYear() || project.getAllParticipants().isEmpty()) {
+            return false;
+        }
+        registeredProjects.add(project);
+        return true;
+    }
+
 
     @Override
     public Set<ProjectInterface> getRegisteredProjects() {
-        return Set.copyOf(registeredProjects);
+        return registeredProjects;
     }
 
     @Override
@@ -146,10 +164,30 @@ public class GrantImplementation implements GrantInterface {
     }
 
 
-    @Override
-    public void closeGrant(){
-        state = GrantState.CLOSED;
-    }
+
+        @Override
+        public void closeGrant() {
+            if (state != GrantState.EVALUATING) {
+                return;
+            }
+
+            remainingBudget = budget;
+            for (ProjectInterface project : registeredProjects) {
+                // Check research capacity (replace with your implementation)
+                // In this example, assume all projects pass
+                int projectBudget = getBudgetForProject(project);
+                if (projectBudget > 0) {
+                    remainingBudget -= projectBudget;
+                    int yearlyBudget = projectBudget / Constants.PROJECT_DURATION_IN_YEARS;
+                    for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+                        project.setBudgetForYear(year, yearlyBudget);
+                    }
+                }
+            }
+
+            state = GrantState.CLOSED;
+        }
+
     private boolean checkCapacity(ProjectInterface project) {
         int maxWorkloadPerParticipant = 2; // Adjust this value based on your requirements
 
