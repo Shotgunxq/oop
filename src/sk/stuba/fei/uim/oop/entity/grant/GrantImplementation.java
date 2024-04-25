@@ -80,11 +80,15 @@ public class GrantImplementation implements GrantInterface {
         if (!registeredProjects.contains(project) || state != GrantState.CLOSED) {
             return 0;
         }
-
+//TODO: ci ten projekt je zaregistrovany v gratne,,,,, ak v tam je tak pridat
         int fundedProjects = 0;
+
         for (ProjectInterface p : registeredProjects) {
-            if (getRemainingBudget() > 0) {
+
+            // Check if any project has a budget (doesn't matter which)
+            if (p.getBudgetForYear(p.getStartingYear()) > 0) {
                 fundedProjects++;
+                break; // Optional: Once one funded project is found, we can break the loop
             }
         }
 
