@@ -11,7 +11,6 @@ public class PersonImplementation implements PersonInterface {
     private Set<OrganizationInterface> employers;
 
     public PersonImplementation() {
-
         this.employers = new HashSet<>();
     }
 

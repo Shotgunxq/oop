@@ -13,6 +13,7 @@ public class GrantImplementation implements GrantInterface {
     private AgencyInterface agency;
     private int budget;
     private int remainingBudget;
+    //TODO: aby sa raz tam pridalo a aby poradie sa zanechalo SET HASHSET NEICO EXISST
     private GrantState state;
     private Set<ProjectInterface> registeredProjects;
     private HashMap<ProjectInterface, Integer> projectBudgets;
@@ -74,19 +75,22 @@ public class GrantImplementation implements GrantInterface {
 
 
     @Override
+    //TODO cely tento bolo prepisane podla konzultacie lebo ja uz mam ten projekt ktory dostal peniaze a nemusim
+    // pre iterovat cez vsetky projekty iba ten jeden projekt a jeho roky ci nieco podobne
     public int getBudgetForProject(ProjectInterface project) {
         // This method could be implemented based on specific evaluation criteria
         // For demonstration purposes, assume equal distribution among funded projects
-        if (!registeredProjects.contains(project) || state != GrantState.CLOSED) {
+        if (!registeredProjects.contains(project)) {
             return 0;
         }
-//TODO: ci ten projekt je zaregistrovany v gratne,,,,, ak v tam je tak pridat
+        //TODO: ci ten projekt je zaregistrovany v gratne,,,,, ak v tam je tak pridat
+        //TODO roky projektu iterovat
         int fundedProjects = 0;
 
-        for (ProjectInterface p : registeredProjects) {
-
+        for (int y = project.getStartingYear(); y <= project.getEndingYear(); y++) {
             // Check if any project has a budget (doesn't matter which)
-            if (p.getBudgetForYear(p.getStartingYear()) > 0) {
+            if (y > 0) { //TODO always true
+                //TODO: kolko ma ten projekt  nie plus plus a po prvom iteracii sa breakne
                 fundedProjects++;
                 break; // Optional: Once one funded project is found, we can break the loop
             }
@@ -155,6 +159,7 @@ public class GrantImplementation implements GrantInterface {
 
             // Set budget for each year of the project
             for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+                //TODO: debug lebo pridavanie budgetov nefunguje spravne
                 project.setBudgetForYear(year, yearlyBudget);
             }
 
@@ -174,7 +179,7 @@ public class GrantImplementation implements GrantInterface {
             if (state != GrantState.EVALUATING) {
                 return;
             }
-
+            //TODO: debug
             remainingBudget = budget;
             for (ProjectInterface project : registeredProjects) {
                 // Check research capacity (replace with your implementation)

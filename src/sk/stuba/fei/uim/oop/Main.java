@@ -1,12 +1,12 @@
 package sk.stuba.fei.uim.oop;
 
 import sk.stuba.fei.uim.oop.entity.grant.*;
-
+import sk.stuba.fei.uim.oop.entity.grant.AgencyImplementation;
+import sk.stuba.fei.uim.oop.entity.grant.GrantImplementation;
+import sk.stuba.fei.uim.oop.entity.grant.ProjectImplementation;
 import sk.stuba.fei.uim.oop.entity.organization.CompanyImplementation;
 import sk.stuba.fei.uim.oop.entity.organization.OrganizationInterface;
-
 import sk.stuba.fei.uim.oop.entity.organization.UniversityImplementation;
-
 import sk.stuba.fei.uim.oop.entity.people.PersonImplementation;
 import sk.stuba.fei.uim.oop.entity.people.PersonInterface;
 
@@ -62,10 +62,12 @@ public class Main {
         VEGA.addGrant(grant2, 2023);
 
         P1.setApplicant(STU);
+        P1.getApplicant().registerProjectInOrganization(P1);
         P1.addParticipant(Peter);
         P1.addParticipant(Jozef);
         P1.setStartingYear(2022);
         P2.setApplicant(UK);
+        P2.getApplicant().registerProjectInOrganization(P2);
         P2.addParticipant(Karol);
         P2.addParticipant(Anna);
         P2.setStartingYear(2023);
@@ -93,6 +95,7 @@ public class Main {
         APVV.addGrant(grant3, 2024);
         ProjectInterface P3 = new ProjectImplementation();
         P3.setApplicant(ESET);
+        P3.getApplicant().registerProjectInOrganization(P3);
         P3.addParticipant(Peter);
         P3.setStartingYear(2024);
         grant3.callForProjects();
@@ -111,20 +114,24 @@ public class Main {
         VEGA.addGrant(grant4, 2024);
         ProjectInterface P4 = new ProjectImplementation();
         P4.setApplicant(ESET);
+        P4.getApplicant().registerProjectInOrganization(P4);
         P4.addParticipant(Karol);
         P4.addParticipant(Anna);
         P4.setStartingYear(2024);
         ProjectInterface P5 = new ProjectImplementation();
         P5.setApplicant(STU);
+        P5.getApplicant().registerProjectInOrganization(P5);
         P5.addParticipant(Peter);
         P5.addParticipant(Jozef);
         P5.setStartingYear(2024);
         ProjectInterface P6 = new ProjectImplementation();
         P6.setApplicant(UK);
+        P6.getApplicant().registerProjectInOrganization(P6);
         P6.addParticipant(Anna);
         P6.setStartingYear(2024);
         ProjectInterface P7 = new ProjectImplementation();
         P7.setApplicant(UK);
+        P7.getApplicant().registerProjectInOrganization(P7);
         P7.addParticipant(Karol);
         P7.setStartingYear(2024);
         grant4.callForProjects();
@@ -151,5 +158,7 @@ public class Main {
         System.out.println("ESET CELKOVO:" + ESET.getBudgetForAllProjects());
         System.out.println("STU CELKOVO:" + STU.getBudgetForAllProjects());
         System.out.println("UK CELKOVO:" + UK.getBudgetForAllProjects());
+
+
     }
 }

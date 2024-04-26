@@ -46,7 +46,6 @@ public class ProjectImplementation implements ProjectInterface {
 
     @Override
     public int getEndingYear() {
-        //TODO: idk if -1 is correct but with this its passing the unit test
         return startingYear + Constants.PROJECT_DURATION_IN_YEARS-1;
     }
 
@@ -56,6 +55,7 @@ public class ProjectImplementation implements ProjectInterface {
         int baseBudget = budgetsByYear.getOrDefault(year, 0);
 
         // If project is submitted by a company, add co-financing
+        //TODO notworking correcetly
         if (applicant instanceof OrganizationInterface) {
             OrganizationInterface company = (OrganizationInterface) applicant;
             // No need to call company method here, use the stored value
@@ -81,6 +81,8 @@ public class ProjectImplementation implements ProjectInterface {
 
     @Override
     public void addParticipant(PersonInterface participant) {
+        //TODO: if the participant is part of the orginization true -add/ else do not add
+        // neviem ci sa toto tu riesi
         if (applicant != null && applicant.getName() != null) {
             participants.add(participant);
         }

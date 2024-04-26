@@ -71,6 +71,7 @@ public class CompanyImplementation implements OrganizationInterface {
 
     @Override
     public int getProjectBudget(ProjectInterface pi) {
+        //TODO nemyslim si ze je potrebne instance of, inak toto riesit
         if (this instanceof OrganizationInterface) {
             OrganizationInterface company = (OrganizationInterface) this;
 
@@ -87,6 +88,7 @@ public class CompanyImplementation implements OrganizationInterface {
             initialOwnResources -= companyContribution;
 
             // Retrieve grant-allocated budget and add company contribution
+            //TODO same ako dole
             int baseBudget = pi.getBudgetForYear(java.util.Calendar.YEAR); // Assuming YEAR is the year
             return baseBudget + companyContribution;
         } else {
@@ -96,6 +98,7 @@ public class CompanyImplementation implements OrganizationInterface {
     }
 
     // Helper method to calculate project funding needs (implementation details)
+    //TODO: neviecm co je toto, neni toto potrebne
     private int calculateProjectNeeds(ProjectInterface pi) {
         // ... replace with your logic to determine project funding needs for the year
         return 10000; // Placeholder value for demonstration
@@ -106,6 +109,7 @@ public class CompanyImplementation implements OrganizationInterface {
         int totalSpent = 0;
         for (ProjectInterface project : projects) {
             // Logic to determine company contribution for each project and year
+            //TODO: tu nieco velmi zle, inak sa to ma iterovat samozrejme
             totalSpent += getProjectBudget(project) - project.getBudgetForYear(java.util.Calendar.YEAR);
         }
         return totalSpent;
@@ -122,5 +126,6 @@ public class CompanyImplementation implements OrganizationInterface {
 
     @Override
     public void projectBudgetUpdateNotification(ProjectInterface pi, int year, int budgetForYear) {
+        //TODO
         pi.setBudgetForYear(year, budgetForYear); // Update project budget
     }}
