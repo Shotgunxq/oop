@@ -97,7 +97,8 @@ public class Main {
         System.out.println("tab 1");
         for ( ProjectInterface p : STU.getAllProjects()){
             System.out.println(p.getApplicant().getName() + " " + p.getAllParticipants());
-            //   p.getApplicant().getEmploymentForEmployee(Peter);
+            System.out.println("______" + p.getApplicant().getEmploymentForEmployee(Peter));
+
             // System.out.println( p.getApplicant().getEmploymentForEmployee(Jozef));
         }
 

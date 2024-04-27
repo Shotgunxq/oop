@@ -133,7 +133,7 @@ public class GrantImplementation implements GrantInterface {
         List<ProjectInterface> eligibleProjects = new ArrayList<>();
 
         for (ProjectInterface project : registeredProjects) {
-            if (1==1) { // Check solver capacity
+            if (checkCapacity(project)) { // Check solver capacity
                 eligibleProjects.add(project);
             } else {
                 project.setBudgetForYear(project.getStartingYear(), 0); // Set budget to 0 for ineligible projects
@@ -197,16 +197,19 @@ public class GrantImplementation implements GrantInterface {
         }
 
     private boolean checkCapacity(ProjectInterface project) {
-        int maxWorkloadPerParticipant = 2; // Adjust this value based on your requirements
+        int maxWorkload = 5; // The workload cannot exceed 5
 
         for (PersonInterface participant : project.getAllParticipants()) {
             int participantWorkload = getParticipantWorkload(participant, this);
-            if (participantWorkload + project.getEndingYear() > maxWorkloadPerParticipant) {
+
+            // Check if participant's workload + project workload exceeds the limit
+            if (participantWorkload + (participantWorkload / 100.0) * project.getWorkloadPerYear() * project.getDuration() > maxWorkload) {
                 return false; // Solver capacity exceeded
             }
         }
         return true;
     }
+
 
 
     private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {

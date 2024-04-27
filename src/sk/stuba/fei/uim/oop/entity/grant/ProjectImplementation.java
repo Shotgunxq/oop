@@ -113,8 +113,13 @@ public class ProjectImplementation implements ProjectInterface {
 
     @Override
     public int getWorkloadPerYear() {
+        for (PersonInterface participant : participants) {
+            workloadPerYear += applicant.getEmploymentForEmployee(participant);
+        }
+        System.out.println("!!!!!!!!!!!workloadPerYear: "+workloadPerYear);
         return workloadPerYear;
     }
+
 
     @Override
     public int getDuration() {

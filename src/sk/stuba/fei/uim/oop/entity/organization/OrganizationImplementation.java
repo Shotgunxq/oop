@@ -10,10 +10,10 @@ import java.util.Set;
 public abstract class OrganizationImplementation implements OrganizationInterface {
 
     private String name;
-    private Set<PersonInterface> employees = new HashSet<>();
-    private Set<ProjectInterface> projects = new HashSet<>();
+    protected Set<PersonInterface> employees;
+    protected Set<ProjectInterface> projects;
 
-    private HashMap<PersonInterface, Integer> employmentForEmployee;
+    protected HashMap<PersonInterface, Integer> employmentForEmployee;
 
     public OrganizationImplementation() {
         this.employees = new HashSet<>();
@@ -34,6 +34,7 @@ public abstract class OrganizationImplementation implements OrganizationInterfac
     @Override
     public void addEmployee(PersonInterface p, int employment) {
         employees.add(p);
+        setEmploymentForEmployee(p, employment);
     }
 
     @Override
@@ -41,11 +42,7 @@ public abstract class OrganizationImplementation implements OrganizationInterfac
         return new HashSet<>(employees); // Return a copy to avoid modification
     }
 
-    @Override
-    public int getEmploymentForEmployee(PersonInterface p) {
-        // Implement logic to find and return employment for specific person
-        throw new UnsupportedOperationException("Not implemented in abstract class");
-    }
+
 
     @Override
     public Set<ProjectInterface> getAllProjects() {
@@ -91,6 +88,20 @@ public abstract class OrganizationImplementation implements OrganizationInterfac
         // Implement logic to handle notification (may be relevant for Company)
         pi.setBudgetForYear(year, budgetForYear);
     }
+
+
+    @Override
+    public int getEmploymentForEmployee(PersonInterface p) {
+        // Implement logic to find and return employment for specific person
+//        p.getEmployers().add(this);
+//        throw new UnsupportedOperationException("Not implemented in abstract class");
+        return employmentForEmployee.getOrDefault(p, 0);
+
+
+
+//        return 0;
+    }
+
 
     public void setEmploymentForEmployee(PersonInterface employee, int employment) {
         employmentForEmployee.put(employee, employment);
