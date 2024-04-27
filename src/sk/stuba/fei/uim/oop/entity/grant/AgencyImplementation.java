@@ -16,7 +16,7 @@ public class AgencyImplementation implements AgencyInterface {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -31,6 +31,7 @@ public class AgencyImplementation implements AgencyInterface {
 //            grants.put(year, Set.of(gi));
 //        }
         Set<GrantInterface> grants = grantsByYear.get(year);
+        gi.setYear(year);
         if (grants == null) {
             grants = new HashSet<>();
             grantsByYear.put(year, grants);

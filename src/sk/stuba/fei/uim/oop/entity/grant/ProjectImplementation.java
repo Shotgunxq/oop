@@ -15,14 +15,21 @@ public class ProjectImplementation implements ProjectInterface {
     private OrganizationInterface applicant;
     private Set<PersonInterface> participants;
     private HashMap<Integer, Integer> budgetsByYear;
+
+
+
+    private int totalBudget;
     private int workloadPerYear;
     private int companyCoFunding; // Added field to store company co-funding
 
     public ProjectImplementation() {
         this.participants = new HashSet<>();
         this.budgetsByYear = new HashMap<>();
-        this.companyCoFunding = 0; // Initialize co-funding to 0
+
+        this.companyCoFunding = 2; // Initialize co-funding to 0
     }
+
+
 
     @Override
     public String getProjectName() {
@@ -58,8 +65,7 @@ public class ProjectImplementation implements ProjectInterface {
         //TODO notworking correcetly
         if (applicant instanceof OrganizationInterface) {
             OrganizationInterface company = (OrganizationInterface) applicant;
-            // No need to call company method here, use the stored value
-            baseBudget += companyCoFunding;
+            baseBudget = baseBudget * companyCoFunding;
         }
 
         return baseBudget;
@@ -78,6 +84,8 @@ public class ProjectImplementation implements ProjectInterface {
         }
         return totalBudget;
     }
+
+
 
     @Override
     public void addParticipant(PersonInterface participant) {

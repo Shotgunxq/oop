@@ -20,7 +20,6 @@ public class CompanyImplementation implements OrganizationInterface {
         this.initialOwnResources = Constants.COMPANY_INIT_OWN_RESOURCES; // Placeholder value for demonstration
     }
 
-
     @Override
     public String getName() {
         return name;
@@ -38,18 +37,18 @@ public class CompanyImplementation implements OrganizationInterface {
 
     @Override
     public Set<PersonInterface> getEmployees() {
-        return (employees);
+        return employees;
     }
-
+    //TODO implement this method the same as in UniversityImplementation
     @Override
     public int getEmploymentForEmployee(PersonInterface p) {
+         // Placeholder, implement logic to return actual employment level
         return 0;
-
     }
 
     @Override
     public Set<ProjectInterface> getAllProjects() {
-        return (projects);
+        return projects;
     }
 
     @Override
@@ -66,53 +65,42 @@ public class CompanyImplementation implements OrganizationInterface {
     @Override
     public void registerProjectInOrganization(ProjectInterface project) {
         projects.add(project);
+        // Set budget for each year of the project
+        int projectDuration = project.getDuration();
+        int yearlyBudget = project.getTotalBudget() / projectDuration;
 
+        for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+            project.setBudgetForYear(year, yearlyBudget);
+        }
     }
+
 
     @Override
     public int getProjectBudget(ProjectInterface pi) {
-        //TODO nemyslim si ze je potrebne instance of, inak toto riesit
-        if (this instanceof OrganizationInterface) {
-            OrganizationInterface company = (OrganizationInterface) this;
-
-            // Project funding needs for the year (replace with your calculation logic)
-            int projectNeeds = calculateProjectNeeds(pi);
-
-            // Available company resources considering co-funded projects
-            int availableResources = Math.max(0, initialOwnResources - getBudgetSpentOnProjects());
-
-            // Company contribution capped by project needs and available resources
-            int companyContribution = Math.min(projectNeeds, availableResources);
-
-            // Update remaining resources after co-financing
-            initialOwnResources -= companyContribution;
-
-            // Retrieve grant-allocated budget and add company contribution
-            //TODO same ako dole
-            int baseBudget = pi.getBudgetForYear(java.util.Calendar.YEAR); // Assuming YEAR is the year
-            return baseBudget + companyContribution;
-        } else {
-            // University case, return only grant-allocated budget
-            return pi.getBudgetForYear(java.util.Calendar.YEAR);
-        }
+        int projectNeeds = calculateProjectNeeds(pi);
+        int availableResources = Math.max(0, initialOwnResources - getBudgetSpentOnProjects());
+        int companyContribution = Math.min(projectNeeds, availableResources);
+        initialOwnResources -= companyContribution;
+        int baseBudget = pi.getBudgetForYear(java.util.Calendar.YEAR);
+        return baseBudget + companyContribution;
     }
 
-    // Helper method to calculate project funding needs (implementation details)
-    //TODO: neviecm co je toto, neni toto potrebne
     private int calculateProjectNeeds(ProjectInterface pi) {
-        // ... replace with your logic to determine project funding needs for the year
-        return 10000; // Placeholder value for demonstration
+        // Placeholder logic for demonstration
+        return 10000;
     }
 
-    // Helper method to get total budget spent on co-funded projects (implementation details)
     private int getBudgetSpentOnProjects() {
         int totalSpent = 0;
         for (ProjectInterface project : projects) {
-            // Logic to determine company contribution for each project and year
-            //TODO: tu nieco velmi zle, inak sa to ma iterovat samozrejme
-            totalSpent += getProjectBudget(project) - project.getBudgetForYear(java.util.Calendar.YEAR);
+            totalSpent += calculateCompanyContribution(project) - project.getBudgetForYear(java.util.Calendar.YEAR);
         }
         return totalSpent;
+    }
+
+    private int calculateCompanyContribution(ProjectInterface project) {
+        // Placeholder logic for demonstration
+        return 5000; // Assuming company contributes a fixed amount for each project
     }
 
     @Override
@@ -126,6 +114,6 @@ public class CompanyImplementation implements OrganizationInterface {
 
     @Override
     public void projectBudgetUpdateNotification(ProjectInterface pi, int year, int budgetForYear) {
-        //TODO
-        pi.setBudgetForYear(year, budgetForYear); // Update project budget
-    }}
+        pi.setBudgetForYear(year, budgetForYear);
+    }
+}

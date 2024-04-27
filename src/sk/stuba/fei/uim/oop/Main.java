@@ -55,9 +55,14 @@ public class Main {
         grant1.setIdentifier("grant1");
         grant1.setBudget(100000);
         grant1.setAgency(APVV);
+        grant1.getAgency().setName("APVV");
+        System.out.println("GRANT 1: "+grant1.getAgency().getName()+ " BUDGET: " + grant1.getBudget());
         grant2.setIdentifier("grant2");
         grant2.setBudget(8000);
         grant2.setAgency(VEGA);
+        grant2.getAgency().setName("VEGA");
+        System.out.println("GRANT 2: "+grant2.getAgency().getName()+ " BUDGET: " + grant2.getBudget());
+
         APVV.addGrant(grant1, 2022);
         VEGA.addGrant(grant2, 2023);
 
@@ -66,6 +71,7 @@ public class Main {
         P1.addParticipant(Peter);
         P1.addParticipant(Jozef);
         P1.setStartingYear(2022);
+//        System.out.println("----Projekt 1----");
         P2.setApplicant(UK);
         P2.getApplicant().registerProjectInOrganization(P2);
         P2.addParticipant(Karol);
@@ -79,14 +85,21 @@ public class Main {
         grant2.evaluateProjects();
         grant1.closeGrant();
         grant2.closeGrant();
-        System.out.println(P1.getTotalBudget());
-        System.out.println(P2.getTotalBudget());
-        System.out.println(P1.getBudgetForYear(2022));
-        System.out.println(P2.getBudgetForYear(2023));
-        System.out.println(grant1.getBudgetForProject(P1));
-        System.out.println(grant2.getBudgetForProject(P2));
-        System.out.println("STU PROJECT: " + STU.getProjectBudget(P1));
-        System.out.println("UK PROJECT: " + UK.getProjectBudget(P2));
+//        System.out.println("Projekt 1 total budget "+P1.getTotalBudget());
+//        System.out.println("Projekt 2 total budget "+P2.getTotalBudget());
+//        System.out.println("Projekt 1 total budget for year "+P1.getBudgetForYear(2022));
+//        System.out.println("Projekt 2 total budget for year "+P2.getBudgetForYear(2023));
+//        System.out.println(grant1.getBudgetForProject(P1));
+//        System.out.println(grant2.getBudgetForProject(P2));
+//        System.out.println("STU PROJECT: " + STU.getProjectBudget(P1));
+//        System.out.println("UK PROJECT: " + UK.getProjectBudget(P2));
+
+        System.out.println("tab 1");
+        for ( ProjectInterface p : STU.getAllProjects()){
+            System.out.println(p.getApplicant().getName() + " " + p.getAllParticipants());
+            //   p.getApplicant().getEmploymentForEmployee(Peter);
+            // System.out.println( p.getApplicant().getEmploymentForEmployee(Jozef));
+        }
 
         GrantInterface grant3 = new GrantImplementation();
         grant3.setAgency(APVV);

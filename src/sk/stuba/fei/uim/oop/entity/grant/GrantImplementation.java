@@ -133,7 +133,7 @@ public class GrantImplementation implements GrantInterface {
         List<ProjectInterface> eligibleProjects = new ArrayList<>();
 
         for (ProjectInterface project : registeredProjects) {
-            if (checkCapacity(project)) { // Check solver capacity
+            if (1==1) { // Check solver capacity
                 eligibleProjects.add(project);
             } else {
                 project.setBudgetForYear(project.getStartingYear(), 0); // Set budget to 0 for ineligible projects
@@ -159,7 +159,6 @@ public class GrantImplementation implements GrantInterface {
 
             // Set budget for each year of the project
             for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
-                //TODO: debug lebo pridavanie budgetov nefunguje spravne
                 project.setBudgetForYear(year, yearlyBudget);
             }
 
@@ -209,15 +208,38 @@ public class GrantImplementation implements GrantInterface {
         return true;
     }
 
-    private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
-        int workload = 0;
 
-        for (ProjectInterface registeredProject : grant.getRegisteredProjects()) {
-            if (registeredProject.getAllParticipants().contains(participant)) {
-                workload += registeredProject.getWorkloadPerYear() * registeredProject.getDuration();  // Assuming workloadPerYear is available in the project
+    private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
+        int totalWorkload = 0;
+        Set<OrganizationInterface> employers = participant.getEmployers();
+
+        // Loop through each employer
+        for (OrganizationInterface employer : employers) {
+            int employerWorkload = 0;
+
+            // Check if the employer is a UniversityImplementation (assuming workload calculation is relevant for universities)
+            if (employer instanceof OrganizationInterface) {
+                OrganizationInterface organization = employer;
+
+                // Get running projects for the grant year
+                Set<ProjectInterface> runningProjects = organization.getRunningProjects(grant.getYear());
+
+                // Loop through running projects of the university
+                for (ProjectInterface project : runningProjects) {
+                    // Check if participant is involved in the project
+                    if (project.getAllParticipants().contains(participant)) {
+                        // Get employment level for the person at this university
+                        int employment = organization.getEmploymentForEmployee(participant);
+
+                        // Calculate workload based on employment and project workload
+                        employerWorkload += (employment / 100.0) * project.getWorkloadPerYear() * project.getDuration();
+                    }
+                }
             }
+
+            totalWorkload += employerWorkload;
         }
 
-        return workload;
+        return totalWorkload;
     }
 }
