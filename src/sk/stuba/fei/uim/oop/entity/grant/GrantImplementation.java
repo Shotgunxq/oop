@@ -5,6 +5,7 @@ import sk.stuba.fei.uim.oop.entity.people.PersonInterface;
 import sk.stuba.fei.uim.oop.utility.Constants;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GrantImplementation implements GrantInterface {
 
@@ -127,6 +128,7 @@ public class GrantImplementation implements GrantInterface {
     public void callForProjects() {
         state = GrantState.STARTED;
     }
+    int allocatedBudgetPerProject;
 
     @Override
     public void evaluateProjects() {
@@ -135,6 +137,7 @@ public class GrantImplementation implements GrantInterface {
         for (ProjectInterface project : registeredProjects) {
             if (checkCapacity(project)) { // Check solver capacity
                 eligibleProjects.add(project);
+
             } else {
                 project.setBudgetForYear(project.getStartingYear(), 0); // Set budget to 0 for ineligible projects
             }
@@ -142,7 +145,6 @@ public class GrantImplementation implements GrantInterface {
 
         // Calculate allocated budget per project (consider empty list scenario)
         int numEligibleProjects = eligibleProjects.size();
-        int allocatedBudgetPerProject;
         if (numEligibleProjects == 0) {
             allocatedBudgetPerProject = 0; // No budget allocation if no projects are eligible
         } else if (numEligibleProjects == 1) {
@@ -164,6 +166,7 @@ public class GrantImplementation implements GrantInterface {
 
             // Update projectBudgets HashMap with total allocated budget
             projectBudgets.put(project, allocatedBudgetPerProject);
+            setProjectBudgets(eligibleProjects);
 
             project.getApplicant().projectBudgetUpdateNotification(project, project.getStartingYear(), allocatedBudgetPerProject); // Total allocated budget
         }
@@ -173,28 +176,33 @@ public class GrantImplementation implements GrantInterface {
 
 
 
-        @Override
-        public void closeGrant() {
-            if (state != GrantState.EVALUATING) {
-                return;
-            }
-            //TODO: debug
-            remainingBudget = budget;
-            for (ProjectInterface project : registeredProjects) {
-                // Check research capacity (replace with your implementation)
-                // In this example, assume all projects pass
-                int projectBudget = getBudgetForProject(project);
-                if (projectBudget > 0) {
-                    remainingBudget -= projectBudget;
-                    int yearlyBudget = projectBudget / Constants.PROJECT_DURATION_IN_YEARS;
-                    for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
-                        project.setBudgetForYear(year, yearlyBudget);
-                    }
-                }
+    @Override
+    public void closeGrant() {
+        if (state != GrantState.EVALUATING) {
+            return;
+        }
+        remainingBudget = budget;
+
+        // After project evaluation (assuming closeGrant is called after evaluation)
+        for (ProjectInterface project : registeredProjects) {
+            // Check if project is registered (assuming registration implies approval)
+            if (!registeredProjects.contains(project)) {
+                continue;
             }
 
-            state = GrantState.CLOSED;
+            // Access project budget for the current year (assuming no additional input needed)
+            int currentYearBudget = project.getBudgetForYear(year);
+
+            // Assuming non-zero budget implies project approval
+            if (currentYearBudget > 0) {
+                // Proceed with budget access or calculations for approved projects
+                int totalBudget = project.getTotalBudget(); // Or access specific year budgets
+                // Use project budget information for your application logic (e.g., notifying organizations)
+            }
         }
+
+        state = GrantState.CLOSED;
+    }
 
     private boolean checkCapacity(ProjectInterface project) {
         int maxWorkload = 5; // The workload cannot exceed 5
@@ -220,23 +228,20 @@ public class GrantImplementation implements GrantInterface {
         for (OrganizationInterface employer : employers) {
             int employerWorkload = 0;
 
-            // Check if the employer is a UniversityImplementation (assuming workload calculation is relevant for universities)
-            if (employer instanceof OrganizationInterface) {
-                OrganizationInterface organization = employer;
+            // Get projects registered in the grant year (filter by agency)
+            Set<ProjectInterface> registeredProjects = employer.getRunningProjects(grant.getYear()).stream()
+                    .filter(p -> p.getApplicant() == grant.getAgency()) // Filter by agency
+                    .collect(Collectors.toSet());
 
-                // Get running projects for the grant year
-                Set<ProjectInterface> runningProjects = organization.getRunningProjects(grant.getYear());
+            // Loop through registered projects of the employer
+            for (ProjectInterface project : registeredProjects) {
+                // Check if participant is involved in the project
+                if (project.getAllParticipants().contains(participant)) {
+                    // Get employment level for the person at this employer
+                    int employment = employer.getEmploymentForEmployee(participant);
 
-                // Loop through running projects of the university
-                for (ProjectInterface project : runningProjects) {
-                    // Check if participant is involved in the project
-                    if (project.getAllParticipants().contains(participant)) {
-                        // Get employment level for the person at this university
-                        int employment = organization.getEmploymentForEmployee(participant);
-
-                        // Calculate workload based on employment and project workload
-                        employerWorkload += (employment / 100.0) * project.getWorkloadPerYear() * project.getDuration();
-                    }
+                    // Calculate workload based on employment and project workload
+                    employerWorkload += (employment / 100.0) * project.getWorkloadPerYear() * project.getDuration();
                 }
             }
 
@@ -245,4 +250,23 @@ public class GrantImplementation implements GrantInterface {
 
         return totalWorkload;
     }
+
+    public void setProjectBudgets(List<ProjectInterface> approvedProjects) {
+        for (ProjectInterface project : approvedProjects) {
+            // Calculate allocated budget per project based on project duration
+            int projectDuration = project.getEndingYear() - project.getStartingYear() + 1;
+            int yearlyBudget = allocatedBudgetPerProject / projectDuration;
+
+            // Set budget for each year of the approved project
+            for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+                project.setBudgetForYear(year, yearlyBudget);
+            }
+
+            // Update projectBudgets HashMap with total allocated budget
+            projectBudgets.put(project, allocatedBudgetPerProject);
+
+            project.getApplicant().projectBudgetUpdateNotification(project, project.getStartingYear(), allocatedBudgetPerProject); // Total allocated budget
+        }
+    }
+
 }

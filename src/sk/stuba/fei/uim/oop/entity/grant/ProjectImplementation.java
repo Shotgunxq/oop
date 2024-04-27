@@ -16,6 +16,7 @@ public class ProjectImplementation implements ProjectInterface {
     private Set<PersonInterface> participants;
     private HashMap<Integer, Integer> budgetsByYear;
 
+    private boolean approved;  // Flag to indicate project approval
 
 
     private int totalBudget;
@@ -56,30 +57,39 @@ public class ProjectImplementation implements ProjectInterface {
         return startingYear + Constants.PROJECT_DURATION_IN_YEARS-1;
     }
 
+
     @Override
     public int getBudgetForYear(int year) {
-        // Retrieve base budget allocated by grant agency
-        int baseBudget = budgetsByYear.getOrDefault(year, 0);
+        if (approved) {
+            // Retrieve base budget allocated by grant agency
+            int baseBudget = budgetsByYear.getOrDefault(year, 0);
 
-        // If project is submitted by a company, add co-financing
-        //TODO notworking correcetly
-        if (applicant instanceof OrganizationInterface) {
-            OrganizationInterface company = (OrganizationInterface) applicant;
-            baseBudget = baseBudget * companyCoFunding;
+            // If project is submitted by a company, add co-financing
+            //TODO nefunkcne
+            if (applicant instanceof OrganizationInterface) {
+                OrganizationInterface company = (OrganizationInterface) applicant;
+                baseBudget = baseBudget * companyCoFunding;
+            }
+
+            return baseBudget;
+        } else {
+            return 0; // Return 0 for declined projects
         }
-
-        return baseBudget;
     }
 
     @Override
     public void setBudgetForYear(int year, int budget) {
-        budgetsByYear.put(year, budget);
+        // Divide budget by 4 to correct the inflated value (assuming 4x inflation)
+        budgetsByYear.put(year, budgetsByYear.getOrDefault(year, 0) + budget / 4);
     }
+
 
     @Override
     public int getTotalBudget() {
         int totalBudget = 0;
         for (int budget : budgetsByYear.values()) {
+            // Divide budget by 4 to correct the inflated value (assuming 4x inflation)
+//            totalBudget += budget / 4;
             totalBudget += budget;
         }
         return totalBudget;
@@ -116,7 +126,7 @@ public class ProjectImplementation implements ProjectInterface {
         for (PersonInterface participant : participants) {
             workloadPerYear += applicant.getEmploymentForEmployee(participant);
         }
-        System.out.println("!!!!!!!!!!!workloadPerYear: "+workloadPerYear);
+//        System.out.println("!!!!!!!!!!!workloadPerYear: "+workloadPerYear);
         return workloadPerYear;
     }
 
