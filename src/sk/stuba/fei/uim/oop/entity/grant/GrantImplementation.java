@@ -139,6 +139,7 @@ public class GrantImplementation implements GrantInterface {
             // Set project budget based on eligibility
             if (isEligible) {
                 eligibleProjects.add(project);
+                System.out.println("Allparticipants!!!!: "+project.getAllParticipants());
             } else {
                 project.setBudgetForYear(project.getStartingYear(), 0); // Set budget to 0 for ineligible projects
             }
@@ -154,6 +155,9 @@ public class GrantImplementation implements GrantInterface {
 
         // Update budgets and notify organizations (only for eligible projects)
         for (ProjectInterface project : eligibleProjects) {
+            System.out.println("eligibleProjects: "+eligibleProjects);
+            // Calculate yearly budget based on project duration
+
             int projectDuration = project.getEndingYear() - project.getStartingYear() + 1;
             int yearlyBudget = allocatedBudgetPerProject / projectDuration;
 
@@ -217,36 +221,53 @@ public class GrantImplementation implements GrantInterface {
 
 
 
+//    private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
+//        int totalWorkload = 0;
+//        Set<OrganizationInterface> employers = participant.getEmployers();
+//
+//        // Loop through each employer
+//        for (OrganizationInterface employer : employers) {
+//            int employerWorkload = 0;
+//
+//            // Get projects registered in the grant year (filter by agency)
+//            Set<ProjectInterface> registeredProjects = employer.getRunningProjects(grant.getYear()).stream()
+//                    .filter(p -> p.getApplicant() == grant.getAgency()) // Filter by agency
+//                    .collect(Collectors.toSet());
+//
+//            // Loop through registered projects of the employer
+//            for (ProjectInterface project : registeredProjects) {
+//                // Check if participant is involved in the project
+//                if (project.getAllParticipants().contains(participant)) {
+//                    // Get employment level for the person at this employer
+//                    int employment = employer.getEmploymentForEmployee(participant);
+//
+//                    // Calculate workload based on employment and project workload
+//                    employerWorkload += (employment / 100.0) * project.getWorkloadPerYear() * project.getDuration();
+//                }
+//            }
+//
+//            totalWorkload += employerWorkload;
+//        }
+//
+//        return totalWorkload;
+//    }
+
     private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
-        int totalWorkload = 0;
-        Set<OrganizationInterface> employers = participant.getEmployers();
-
-        // Loop through each employer
-        for (OrganizationInterface employer : employers) {
-            int employerWorkload = 0;
-
-            // Get projects registered in the grant year (filter by agency)
-            Set<ProjectInterface> registeredProjects = employer.getRunningProjects(grant.getYear()).stream()
-                    .filter(p -> p.getApplicant() == grant.getAgency()) // Filter by agency
-                    .collect(Collectors.toSet());
-
-            // Loop through registered projects of the employer
-            for (ProjectInterface project : registeredProjects) {
-                // Check if participant is involved in the project
-                if (project.getAllParticipants().contains(participant)) {
-                    // Get employment level for the person at this employer
-                    int employment = employer.getEmploymentForEmployee(participant);
-
-                    // Calculate workload based on employment and project workload
-                    employerWorkload += (employment / 100.0) * project.getWorkloadPerYear() * project.getDuration();
-                }
-            }
-
-            totalWorkload += employerWorkload;
-        }
-
-        return totalWorkload;
+        return participant.getEmployers().stream()
+                .mapToInt(employer -> calculateEmployerWorkload(employer, participant, grant))
+                .sum();
     }
 
+    private int calculateEmployerWorkload(OrganizationInterface employer, PersonInterface participant, GrantInterface grant) {
+        return employer.getRunningProjects(grant.getYear()).stream()
+                .filter(p -> p.getApplicant() == grant.getAgency() && p.getAllParticipants().contains(participant))
+                .mapToInt(project -> calculateProjectWorkload(employer, project))
+                .sum();
+    }
+
+    private int calculateProjectWorkload(OrganizationInterface employer, ProjectInterface project) {
+        int employment = employer.getEmploymentForEmployee((PersonInterface) project.getApplicant());
+        return (int) ((employment / 100.0) * project.getWorkloadPerYear() * project.getDuration());
+    }
 
 }

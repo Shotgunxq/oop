@@ -110,6 +110,7 @@ public class Main {
         System.out.println("14: P3 budget for year 2020 "+P3.getBudgetForYear(2020));
         System.out.println("15: grant budger for projekt "+grant3.getBudgetForProject(P3));
         System.out.println("16:ESET PROJECT: " + ESET.getProjectBudget(P3));
+        System.out.println("17: workload" + P3.getAllParticipants());
 
 //        GrantInterface grantX = new GrantImplementation();
 //        grantX.setAgency(APVV);
