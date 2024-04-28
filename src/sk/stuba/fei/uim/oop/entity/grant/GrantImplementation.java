@@ -2,7 +2,6 @@ package sk.stuba.fei.uim.oop.entity.grant;
 
 import sk.stuba.fei.uim.oop.entity.organization.OrganizationInterface;
 import sk.stuba.fei.uim.oop.entity.people.PersonInterface;
-import sk.stuba.fei.uim.oop.utility.Constants;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -249,22 +248,5 @@ public class GrantImplementation implements GrantInterface {
         return totalWorkload;
     }
 
-    public void setProjectBudgets(List<ProjectInterface> approvedProjects) {
-        for (ProjectInterface project : approvedProjects) {
-            // Calculate allocated budget per project based on project duration
-            int projectDuration = project.getEndingYear() - project.getStartingYear() + 1;
-            int yearlyBudget = allocatedBudgetPerProject / projectDuration;
-
-            // Set budget for each year of the approved project
-            for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
-                project.setBudgetForYear(year, yearlyBudget);
-            }
-
-            // Update projectBudgets HashMap with total allocated budget
-            projectBudgets.put(project, allocatedBudgetPerProject);
-
-            project.getApplicant().projectBudgetUpdateNotification(project, project.getStartingYear(), allocatedBudgetPerProject); // Total allocated budget
-        }
-    }
 
 }

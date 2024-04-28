@@ -79,10 +79,10 @@ public class Main {
         grant2.evaluateProjects();
         grant1.closeGrant();
         grant2.closeGrant();
-        System.out.println("1:"+P1.getTotalBudget());
-        System.out.println("2:"+P2.getTotalBudget());
-        System.out.println("3:"+P1.getBudgetForYear(2022));
-        System.out.println("4:"+P2.getBudgetForYear(2023));
+        System.out.println("1: P1 totalBudget "+P1.getTotalBudget());
+        System.out.println("2: P2 totalBudget "+P2.getTotalBudget());
+        System.out.println("3: P1 budget for year 2022 "+P1.getBudgetForYear(2022));
+        System.out.println("4: P2 budget for year 2023 "+P2.getBudgetForYear(2023));
         System.out.println("5:ENDING YEAR"+P1.getEndingYear());
         System.out.println("6:ENDING YEAR"+P2.getEndingYear());
         System.out.println("7:"+grant1.getBudgetForProject(P1));
@@ -106,9 +106,9 @@ public class Main {
         grant3.evaluateProjects();
         grant3.closeGrant();
         System.out.println("12:"+APVV.getAllGrants());
-        System.out.println("13:"+P3.getTotalBudget());
-        System.out.println("14:"+P3.getBudgetForYear(2020));
-        System.out.println("15:"+grant3.getBudgetForProject(P3));
+        System.out.println("13: P3 totalBudget "+P3.getTotalBudget());
+        System.out.println("14: P3 budget for year 2020 "+P3.getBudgetForYear(2020));
+        System.out.println("15: grant budger for projekt "+grant3.getBudgetForProject(P3));
         System.out.println("16:ESET PROJECT: " + ESET.getProjectBudget(P3));
 
 //        GrantInterface grantX = new GrantImplementation();
