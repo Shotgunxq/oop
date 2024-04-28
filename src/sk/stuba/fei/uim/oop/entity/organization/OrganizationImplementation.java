@@ -63,14 +63,8 @@ public abstract class OrganizationImplementation implements OrganizationInterfac
     @Override
     public void registerProjectInOrganization(ProjectInterface project) {
         projects.add(project);
-        // Set budget for each year of the project
-        int projectDuration = project.getDuration();
-        int yearlyBudget = project.getTotalBudget() / projectDuration;
-
-        for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
-            project.setBudgetForYear(year, yearlyBudget);
-        }
     }
+
     @Override
     public abstract int getProjectBudget(ProjectInterface pi);
 

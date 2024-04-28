@@ -135,38 +135,36 @@ public class GrantImplementation implements GrantInterface {
         List<ProjectInterface> eligibleProjects = new ArrayList<>();
 
         for (ProjectInterface project : registeredProjects) {
-            if (checkCapacity(project)) { // Check solver capacity
-                eligibleProjects.add(project);
+            boolean isEligible = checkCapacity(project); // Check solver capacity
 
+            // Set project budget based on eligibility
+            if (isEligible) {
+                eligibleProjects.add(project);
             } else {
                 project.setBudgetForYear(project.getStartingYear(), 0); // Set budget to 0 for ineligible projects
             }
         }
 
-        // Calculate allocated budget per project (consider empty list scenario)
+        // Calculate allocated budget per eligible project (consider empty list scenario)
         int numEligibleProjects = eligibleProjects.size();
         if (numEligibleProjects == 0) {
             allocatedBudgetPerProject = 0; // No budget allocation if no projects are eligible
-        } else if (numEligibleProjects == 1) {
-            allocatedBudgetPerProject = budget; // Entire budget for the only project
         } else {
-            allocatedBudgetPerProject = remainingBudget / (numEligibleProjects / 2);
+            allocatedBudgetPerProject = remainingBudget / numEligibleProjects;
         }
 
-        // Update project budgets and notify organizations
-        for (int i = 0; i < Math.min(numEligibleProjects, eligibleProjects.size()); i++) { // Handle potential list modification
-            ProjectInterface project = eligibleProjects.get(i);
+        // Update budgets and notify organizations (only for eligible projects)
+        for (ProjectInterface project : eligibleProjects) {
             int projectDuration = project.getEndingYear() - project.getStartingYear() + 1;
             int yearlyBudget = allocatedBudgetPerProject / projectDuration;
 
             // Set budget for each year of the project
-            for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+            for (int year = project.getStartingYear(); year < project.getStartingYear() + projectDuration; year++) {
                 project.setBudgetForYear(year, yearlyBudget);
             }
 
             // Update projectBudgets HashMap with total allocated budget
             projectBudgets.put(project, allocatedBudgetPerProject);
-            setProjectBudgets(eligibleProjects);
 
             project.getApplicant().projectBudgetUpdateNotification(project, project.getStartingYear(), allocatedBudgetPerProject); // Total allocated budget
         }

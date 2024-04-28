@@ -60,38 +60,44 @@ public class ProjectImplementation implements ProjectInterface {
 
     @Override
     public int getBudgetForYear(int year) {
-        if (approved) {
-            // Retrieve base budget allocated by grant agency
-            int baseBudget = budgetsByYear.getOrDefault(year, 0);
 
-            // If project is submitted by a company, add co-financing
-            //TODO nefunkcne
-            if (applicant instanceof OrganizationInterface) {
-                OrganizationInterface company = (OrganizationInterface) applicant;
-                baseBudget = baseBudget * companyCoFunding;
-            }
-
-            return baseBudget;
-        } else {
-            return 0; // Return 0 for declined projects
-        }
+        // Retrieve base budget allocated by grant agency
+//        int baseBudget = budgetsByYear.getOrDefault(year, 0);
+//
+//        // If project is submitted by a company, add co-financing
+//        //TODO nefunkcne
+//        if (applicant instanceof OrganizationInterface) {
+//            OrganizationInterface company = (OrganizationInterface) applicant;
+//            baseBudget = baseBudget * companyCoFunding;
+//        }
+//
+//        return baseBudget;
+        return budgetsByYear.getOrDefault(year, 0);
     }
 
-    @Override
-    public void setBudgetForYear(int year, int budget) {
-        // Divide budget by 4 to correct the inflated value (assuming 4x inflation)
-        budgetsByYear.put(year, budgetsByYear.getOrDefault(year, 0) + budget / 4);
+
+//    @Override
+//    public void setBudgetForYear(int year, int budget) {
+//        budgetsByYear.put(year, budget/ getDuration() );
+//    }
+@Override
+public void setBudgetForYear(int year, int budget) {
+    if (year < startingYear || year > getEndingYear()) {
+        throw new IllegalArgumentException("Year " + year + " is outside project duration");
     }
 
+    // Calculate total budget if not already set
+    if (totalBudget == 0) {
+        totalBudget = budget * getDuration();
+    }
+
+    int yearlyBudget = totalBudget / getDuration();
+    budgetsByYear.put(year, yearlyBudget);
+}
 
     @Override
     public int getTotalBudget() {
-        int totalBudget = 0;
-        for (int budget : budgetsByYear.values()) {
-            // Divide budget by 4 to correct the inflated value (assuming 4x inflation)
-//            totalBudget += budget / 4;
-            totalBudget += budget;
-        }
+
         return totalBudget;
     }
 
@@ -126,7 +132,6 @@ public class ProjectImplementation implements ProjectInterface {
         for (PersonInterface participant : participants) {
             workloadPerYear += applicant.getEmploymentForEmployee(participant);
         }
-//        System.out.println("!!!!!!!!!!!workloadPerYear: "+workloadPerYear);
         return workloadPerYear;
     }
 
