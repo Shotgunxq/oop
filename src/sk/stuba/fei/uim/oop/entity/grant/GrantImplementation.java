@@ -195,40 +195,75 @@ public class GrantImplementation implements GrantInterface {
     private boolean checkCapacity(ProjectInterface project) {
         int maxWorkload = Constants.MAX_EMPLOYMENT_PER_AGENCY; // The maximum workload allowed per year
 
-        // Map to store the workload of each participant within the same agency
-        Map<PersonInterface, Integer> participantWorkloadMap = new HashMap<>();
+        // Get the applicant organization for the project
+        OrganizationInterface applicant = project.getApplicant();
 
-        // Iterate through each project within the agency
-        for (GrantInterface grant : agency.getAllGrants()) {
-            for (ProjectInterface proj : grant.getRegisteredProjects()) {
-                // Check if the project is within the same agency
-                if (proj.getApplicant().equals(project.getApplicant())) {
-                    // Iterate through each participant of the project
-                    for (PersonInterface participant : proj.getAllParticipants()) {
-                        int employment = proj.getWorkloadPerYear();
+        // Get all grants issued by the agency
+        Set<GrantInterface> allGrants = agency.getAllGrants();
 
-                        // Update workload for the participant
-                        participantWorkloadMap.put(participant, participantWorkloadMap.getOrDefault(participant, 0) + employment);
+        // Map to store the total workload of each participant within the same agency for the project
+        Map<PersonInterface, Integer> totalWorkloadMap = new HashMap<>();
+
+        // Iterate over all grants issued by the agency
+        for (GrantInterface grant : allGrants) {
+            // Check if the grant is relevant to the project year
+            if (grant.getYear() <= project.getStartingYear()) {
+                // Iterate over all registered projects in the grant
+                for (ProjectInterface proj : grant.getRegisteredProjects()) {
+                    // Check if the project overlaps with the proposed project's duration
+                    if (proj.getStartingYear() < project.getStartingYear() + project.getDuration() &&
+                            proj.getStartingYear() + proj.getDuration() > project.getStartingYear()) {
+                        // Get all participants of the overlapping project
+                        Set<PersonInterface> overlappingParticipants = proj.getAllParticipants();
+                        // Iterate over each participant of the overlapping project
+                        for (PersonInterface participant : overlappingParticipants) {
+                            // Initialize total employment for the participant
+                            int totalEmployment = 0;
+                            // Iterate over all employers of the participant
+                            for (OrganizationInterface employer : participant.getEmployers()) {
+                                // Check if the employer is the applicant organization
+                                if (employer.equals(applicant)) {
+                                    // Update the total employment for the participant
+                                    totalEmployment += employer.getEmploymentForEmployee(participant);
+                                }
+                            }
+                            // Update the total workload for the participant
+                            totalWorkloadMap.put(participant, totalWorkloadMap.getOrDefault(participant, 0) + totalEmployment);
+                        }
                     }
                 }
             }
         }
 
-        // Check if any participant's workload exceeds the limit for the given project
-        for (PersonInterface participant : project.getAllParticipants()) {
-            int totalWorkloadForParticipant = participantWorkloadMap.getOrDefault(participant, 0);
-            System.out.println("Total workload for participant " + participant.getName() + " is " + totalWorkloadForParticipant + " for project " + project.getProjectName());
+        // Get all participants of the current project
+        Set<PersonInterface> projectParticipants = project.getAllParticipants();
 
-            // Check if the participant's workload exceeds the limit
+        // Iterate over each participant of the current project
+        for (PersonInterface participant : projectParticipants) {
+            // Get the total workload for the participant
+            int totalWorkloadForParticipant = totalWorkloadMap.getOrDefault(participant, 0);
+
+            // Add the planned workload for the current project
+            totalWorkloadForParticipant += (applicant.getEmploymentForEmployee(participant) / 100.0) * project.getTotalBudget() / project.getDuration();
+
+            // Check if the total workload exceeds the limit
             if (totalWorkloadForParticipant > maxWorkload) {
                 System.out.println("!!!!!!!!!!!!!!!!Workload exceeded for participant " + participant.getName());
                 return false; // Workload exceeded for this participant
             }
         }
+
         System.out.println(project.getProjectName());
-        System.out.println("Workload not exceeded for any participant!!!!!!!!" + participantWorkloadMap);
+        System.out.println("Workload not exceeded for any participant!!!!!!!!" + totalWorkloadMap);
         return true; // Workload not exceeded for any participant
     }
+
+
+
+
+
+
+
 
 
 
