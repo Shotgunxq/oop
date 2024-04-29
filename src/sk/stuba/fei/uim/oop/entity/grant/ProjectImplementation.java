@@ -129,6 +129,7 @@ public void setBudgetForYear(int year, int budget) {
 
     @Override
     public int getWorkloadPerYear() {
+        int workloadPerYear = 0;
         for (PersonInterface participant : participants) {
             workloadPerYear += applicant.getEmploymentForEmployee(participant);
         }

@@ -25,11 +25,6 @@ public class AgencyImplementation implements AgencyInterface {
 
     @Override
     public void addGrant(GrantInterface gi, int year) {
-//        if (grants.containsKey(year)) {
-//            grants.get(year).add(gi);
-//        } else {
-//            grants.put(year, Set.of(gi));
-//        }
         Set<GrantInterface> grants = grantsByYear.get(year);
         gi.setYear(year);
         if (grants == null) {

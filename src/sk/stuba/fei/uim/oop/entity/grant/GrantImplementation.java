@@ -155,8 +155,7 @@ public class GrantImplementation implements GrantInterface {
         // Update budgets and notify organizations (only for eligible projects)
         for (ProjectInterface project : eligibleProjects) {
             // Calculate yearly budget based on project duration
-
-            int projectDuration = project.getEndingYear() - project.getStartingYear() + 1;
+            int projectDuration = project.getDuration();
             int yearlyBudget = allocatedBudgetPerProject / projectDuration;
 
             // Set budget for each year of the project
@@ -204,51 +203,47 @@ public class GrantImplementation implements GrantInterface {
     }
 
     private boolean checkCapacity(ProjectInterface project) {
-        int maxWorkload = 5; // The workload cannot exceed 5
+        int maxWorkload = 5; // The maximum workload allowed per year
 
-        for (PersonInterface participant : project.getAllParticipants()) {
-            int participantWorkload = getParticipantWorkload(participant, this);
+        // Iterate through each year of the project
+        for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
+            // Iterate through each participant of the project
+            for (PersonInterface participant : project.getAllParticipants()) {
+                int totalWorkloadForYear = 0;
 
-            // Check if participant's workload + project workload exceeds the limit
-            if (participantWorkload + (participantWorkload / 100.0) * project.getWorkloadPerYear() * project.getDuration() > maxWorkload) {
-                return false; // Solver capacity exceeded
-            }
-        }
-        return true;
-    }
+                // Iterate through each project in the grant
+                for (GrantInterface grant : agency.getAllGrants()) {
+                    // Check if the grant contains the project
+                    if (grant.getRegisteredProjects().contains(project)) {
+                        // Iterate through each participant of the project in the grant
+                        for (PersonInterface grantParticipant : project.getAllParticipants()) {
+                            // Check if the participant is the same as the current participant
+                            if (grantParticipant.equals(participant)) {
+                                // Get the employment level for the participant at the applicant organization of the project
+                                int employment = project.getWorkloadPerYear() ;
 
+                                // Calculate the workload for this project and add it to the total workload for the year
+                                totalWorkloadForYear += (employment / 100.0) * project.getWorkloadPerYear();
+                            }
+                        }
+                    }
+                }
 
-
-    private int getParticipantWorkload(PersonInterface participant, GrantInterface grant) {
-        int totalWorkload = 0;
-        Set<OrganizationInterface> employers = participant.getEmployers();
-
-        // Loop through each employer
-        for (OrganizationInterface employer : employers) {
-            int employerWorkload = 0;
-
-            // Get projects registered in the grant year (filter by agency)
-            Set<ProjectInterface> registeredProjects = employer.getRunningProjects(grant.getYear()).stream()
-                    .filter(p -> p.getApplicant() == grant.getAgency()) // Filter by agency
-                    .collect(Collectors.toSet());
-
-            // Loop through registered projects of the employer
-            for (ProjectInterface project : registeredProjects) {
-                // Check if participant is involved in the project
-                if (project.getAllParticipants().contains(participant)) {
-                    // Get employment level for the person at this employer
-                    int employment = employer.getEmploymentForEmployee(participant);
-
-                    // Calculate workload based on employment and project workload
-                    employerWorkload += (employment / 100.0) * project.getWorkloadPerYear() * project.getDuration();
+                // Check if the participant's workload for the current year exceeds the limit
+                if (totalWorkloadForYear > maxWorkload) {
+                    return false; // Workload exceeded for this year and participant
                 }
             }
-
-            totalWorkload += employerWorkload;
         }
-
-        return totalWorkload;
+        return true; // Workload not exceeded for any year and participant
     }
+
+
+
+
+
+
+
 
 
 }
