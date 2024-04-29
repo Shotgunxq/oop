@@ -144,33 +144,20 @@ public class GrantImplementation implements GrantInterface {
             }
         }
 
-        // Calculate allocated budget per eligible project (consider empty list scenario)
-        int numEligibleProjects = eligibleProjects.size();
-        if (numEligibleProjects == 0) {
-            allocatedBudgetPerProject = 0; // No budget allocation if no projects are eligible
-        } else {
-            allocatedBudgetPerProject = remainingBudget / numEligibleProjects;
-        }
-
-        // Update budgets and notify organizations (only for eligible projects)
+        // Calculate allocated budget per eligible project
+        int totalEligibleBudget = remainingBudget; // Start with the total remaining budget
         for (ProjectInterface project : eligibleProjects) {
-            // Calculate yearly budget based on project duration
             int projectDuration = project.getDuration();
-            int yearlyBudget = allocatedBudgetPerProject / projectDuration;
-
-            // Set budget for each year of the project
+            int budgetForProject = totalEligibleBudget / projectDuration; // Divide equally among project years
+            totalEligibleBudget -= budgetForProject * projectDuration; // Update remaining budget
             for (int year = project.getStartingYear(); year < project.getStartingYear() + projectDuration; year++) {
-                project.setBudgetForYear(year, yearlyBudget);
+                project.setBudgetForYear(year, budgetForProject);
             }
-
-            // Update projectBudgets HashMap with total allocated budget
-            projectBudgets.put(project, allocatedBudgetPerProject);
-
-            project.getApplicant().projectBudgetUpdateNotification(project, project.getStartingYear(), allocatedBudgetPerProject); // Total allocated budget
         }
 
         state = GrantState.CLOSED; // Update state after evaluation and allocation
     }
+
 
 
 
@@ -179,7 +166,6 @@ public class GrantImplementation implements GrantInterface {
         if (state != GrantState.EVALUATING) {
             return;
         }
-        remainingBudget = budget;
 
         // After project evaluation (assuming closeGrant is called after evaluation)
         for (ProjectInterface project : registeredProjects) {
@@ -188,14 +174,17 @@ public class GrantImplementation implements GrantInterface {
                 continue;
             }
 
-            // Access project budget for the current year (assuming no additional input needed)
-            int currentYearBudget = project.getBudgetForYear(year);
+            // Calculate budget for each independent year
+            for (int year = project.getStartingYear(); year < project.getStartingYear() + project.getDuration(); year++) {
+                // Access project budget for the current year (assuming no additional input needed)
+                int currentYearBudget = project.getBudgetForYear(year);
 
-            // Assuming non-zero budget implies project approval
-            if (currentYearBudget > 0) {
-                // Proceed with budget access or calculations for approved projects
-                int totalBudget = project.getTotalBudget(); // Or access specific year budgets
-                // Use project budget information for your application logic (e.g., notifying organizations)
+                // Assuming non-zero budget implies project approval
+                if (currentYearBudget > 0) {
+                    // Proceed with budget access or calculations for approved projects
+                    int totalBudget = project.getTotalBudget(); // Or access specific year budgets
+                    // Use project budget information for your application logic (e.g., notifying organizations)
+                }
             }
         }
 
@@ -205,38 +194,57 @@ public class GrantImplementation implements GrantInterface {
     private boolean checkCapacity(ProjectInterface project) {
         int maxWorkload = 5; // The maximum workload allowed per year
 
-        // Iterate through each year of the project
-        for (int year = project.getStartingYear(); year <= project.getEndingYear(); year++) {
-            // Iterate through each participant of the project
-            for (PersonInterface participant : project.getAllParticipants()) {
-                int totalWorkloadForYear = 0;
+        // Map to store the workload of each participant within the same agency
+        Map<OrganizationInterface, Map<PersonInterface, Integer>> organizationWorkloadMap = new HashMap<>();
 
-                // Iterate through each project in the grant
-                for (GrantInterface grant : agency.getAllGrants()) {
-                    // Check if the grant contains the project
-                    if (grant.getRegisteredProjects().contains(project)) {
-                        // Iterate through each participant of the project in the grant
-                        for (PersonInterface grantParticipant : project.getAllParticipants()) {
-                            // Check if the participant is the same as the current participant
-                            if (grantParticipant.equals(participant)) {
-                                // Get the employment level for the participant at the applicant organization of the project
-                                int employment = project.getWorkloadPerYear() ;
+        // Iterate through each project within the agency
+        for (GrantInterface grant : agency.getAllGrants()) {
+            for (ProjectInterface proj : grant.getRegisteredProjects()) {
+                // Check if the project is within the same agency
+                if (proj.getApplicant().equals(project.getApplicant())) {
+                    OrganizationInterface applicant = proj.getApplicant();
 
-                                // Calculate the workload for this project and add it to the total workload for the year
-                                totalWorkloadForYear += (employment / 100.0) * project.getWorkloadPerYear();
-                            }
-                        }
+                    // Ensure there's an entry for the organization in the workload map
+                    if (!organizationWorkloadMap.containsKey(applicant)) {
+                        organizationWorkloadMap.put(applicant, new HashMap<>());
                     }
-                }
 
-                // Check if the participant's workload for the current year exceeds the limit
-                if (totalWorkloadForYear > maxWorkload) {
-                    return false; // Workload exceeded for this year and participant
+                    // Iterate through each participant of the project
+                    for (PersonInterface participant : proj.getAllParticipants()) {
+                        int employment = proj.getWorkloadPerYear();
+                        int budgetForProject = grant.getBudgetForProject(proj);
+                        int projectDuration = proj.getDuration();
+                        int participantWorkload = (employment / 100) * (budgetForProject / projectDuration);
+
+                        // Update workload for the participant within the organization
+                        Map<PersonInterface, Integer> participantWorkloadInOrganization = organizationWorkloadMap.get(applicant);
+                        participantWorkloadInOrganization.put(participant, participantWorkloadInOrganization.getOrDefault(participant, 0) + participantWorkload);
+                    }
                 }
             }
         }
-        return true; // Workload not exceeded for any year and participant
+
+        // Check if any participant's workload exceeds the limit for the given project
+        for (PersonInterface participant : project.getAllParticipants()) {
+            OrganizationInterface applicant = project.getApplicant();
+            int totalWorkloadForParticipant = organizationWorkloadMap.getOrDefault(applicant, new HashMap<>()).get(participant);
+            System.out.println("Total workload for participant " + participant.getName() + " is " + totalWorkloadForParticipant + " for project " + project.getProjectName());
+
+            // Check if the participant's workload exceeds the limit
+            if (totalWorkloadForParticipant > maxWorkload) {
+                System.out.println("!!!!!!!!!!!!!!!!Workload exceeded for participant " + participant.getName());
+                return false; // Workload exceeded for this participant
+            }
+        }
+
+        System.out.println(project.getProjectName());
+        System.out.println("Workload not exceeded for any participant!!!!!!!!" + organizationWorkloadMap);
+        return true; // Workload not exceeded for any participant
     }
+
+
+
+
 
 
 
