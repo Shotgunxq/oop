@@ -2,6 +2,7 @@ package sk.stuba.fei.uim.oop.entity.grant;
 
 import sk.stuba.fei.uim.oop.entity.organization.OrganizationInterface;
 import sk.stuba.fei.uim.oop.entity.people.PersonInterface;
+import sk.stuba.fei.uim.oop.utility.Constants;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -192,33 +193,22 @@ public class GrantImplementation implements GrantInterface {
     }
 
     private boolean checkCapacity(ProjectInterface project) {
-        int maxWorkload = 5; // The maximum workload allowed per year
+        int maxWorkload = Constants.MAX_EMPLOYMENT_PER_AGENCY; // The maximum workload allowed per year
 
         // Map to store the workload of each participant within the same agency
-        Map<OrganizationInterface, Map<PersonInterface, Integer>> organizationWorkloadMap = new HashMap<>();
+        Map<PersonInterface, Integer> participantWorkloadMap = new HashMap<>();
 
         // Iterate through each project within the agency
         for (GrantInterface grant : agency.getAllGrants()) {
             for (ProjectInterface proj : grant.getRegisteredProjects()) {
                 // Check if the project is within the same agency
                 if (proj.getApplicant().equals(project.getApplicant())) {
-                    OrganizationInterface applicant = proj.getApplicant();
-
-                    // Ensure there's an entry for the organization in the workload map
-                    if (!organizationWorkloadMap.containsKey(applicant)) {
-                        organizationWorkloadMap.put(applicant, new HashMap<>());
-                    }
-
                     // Iterate through each participant of the project
                     for (PersonInterface participant : proj.getAllParticipants()) {
                         int employment = proj.getWorkloadPerYear();
-                        int budgetForProject = grant.getBudgetForProject(proj);
-                        int projectDuration = proj.getDuration();
-                        int participantWorkload = (employment / 100) * (budgetForProject / projectDuration);
 
-                        // Update workload for the participant within the organization
-                        Map<PersonInterface, Integer> participantWorkloadInOrganization = organizationWorkloadMap.get(applicant);
-                        participantWorkloadInOrganization.put(participant, participantWorkloadInOrganization.getOrDefault(participant, 0) + participantWorkload);
+                        // Update workload for the participant
+                        participantWorkloadMap.put(participant, participantWorkloadMap.getOrDefault(participant, 0) + employment);
                     }
                 }
             }
@@ -226,8 +216,7 @@ public class GrantImplementation implements GrantInterface {
 
         // Check if any participant's workload exceeds the limit for the given project
         for (PersonInterface participant : project.getAllParticipants()) {
-            OrganizationInterface applicant = project.getApplicant();
-            int totalWorkloadForParticipant = organizationWorkloadMap.getOrDefault(applicant, new HashMap<>()).get(participant);
+            int totalWorkloadForParticipant = participantWorkloadMap.getOrDefault(participant, 0);
             System.out.println("Total workload for participant " + participant.getName() + " is " + totalWorkloadForParticipant + " for project " + project.getProjectName());
 
             // Check if the participant's workload exceeds the limit
@@ -236,9 +225,8 @@ public class GrantImplementation implements GrantInterface {
                 return false; // Workload exceeded for this participant
             }
         }
-
         System.out.println(project.getProjectName());
-        System.out.println("Workload not exceeded for any participant!!!!!!!!" + organizationWorkloadMap);
+        System.out.println("Workload not exceeded for any participant!!!!!!!!" + participantWorkloadMap);
         return true; // Workload not exceeded for any participant
     }
 
