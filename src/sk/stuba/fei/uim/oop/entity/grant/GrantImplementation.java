@@ -75,34 +75,23 @@ public class GrantImplementation implements GrantInterface {
 
 
     @Override
-    //TODO cely tento bolo prepisane podla konzultacie lebo ja uz mam ten projekt ktory dostal peniaze a nemusim
-    // pre iterovat cez vsetky projekty iba ten jeden projekt a jeho roky ci nieco podobne
     public int getBudgetForProject(ProjectInterface project) {
-        // This method could be implemented based on specific evaluation criteria
-        // For demonstration purposes, assume equal distribution among funded projects
         if (!registeredProjects.contains(project)) {
-            return 0;
-        }
-        //TODO: ci ten projekt je zaregistrovany v gratne,,,,, ak v tam je tak pridat
-        //TODO roky projektu iterovat
-        int fundedProjects = 0;
-
-        for (int y = project.getStartingYear(); y <= project.getEndingYear(); y++) {
-            // Check if any project has a budget (doesn't matter which)
-            if (y > 0) { //TODO always true
-                //TODO: kolko ma ten projekt  nie plus plus a po prvom iteracii sa breakne
-                fundedProjects++;
-                break; // Optional: Once one funded project is found, we can break the loop
-            }
+            return 0; // Project is not registered in the grant
         }
 
-        if (fundedProjects == 0) {
-            return 0;
+        // Calculate budget based on the number of years the project is funded
+        int projectDuration = project.getDuration();
+        if (projectDuration == 0) {
+            return 0; // Project duration is not valid
         }
 
-        int projectBudget = budget / fundedProjects;
-        return projectBudget;
+        // Calculate budget per year
+        int budgetPerYear = budget / projectDuration;
+
+        return budgetPerYear;
     }
+
     @Override
     public boolean registerProject(ProjectInterface project) {
         if (state != GrantState.STARTED || year != project.getStartingYear() || project.getAllParticipants().isEmpty()) {
@@ -211,7 +200,7 @@ public class GrantImplementation implements GrantInterface {
             for (PersonInterface participant : project.getAllParticipants()) {
                 int totalWorkloadForYear = 0;
 
-                // Iterate through each project in the grant
+                // Iterate through each grant of the agency
                 for (GrantInterface grant : agency.getAllGrants()) {
                     // Check if the grant contains the project
                     if (grant.getRegisteredProjects().contains(project)) {
@@ -220,10 +209,11 @@ public class GrantImplementation implements GrantInterface {
                             // Check if the participant is the same as the current participant
                             if (grantParticipant.equals(participant)) {
                                 // Get the employment level for the participant at the applicant organization of the project
-                                int employment = project.getWorkloadPerYear() ;
+                                OrganizationInterface applicant = project.getApplicant();
+                                int employment = applicant.getEmploymentForEmployee(participant);
 
                                 // Calculate the workload for this project and add it to the total workload for the year
-                                totalWorkloadForYear += (employment / 100.0) * project.getWorkloadPerYear();
+                                totalWorkloadForYear += (employment / 100.0) * grant.getBudgetForProject(project) / project.getDuration();
                             }
                         }
                     }
@@ -231,12 +221,15 @@ public class GrantImplementation implements GrantInterface {
 
                 // Check if the participant's workload for the current year exceeds the limit
                 if (totalWorkloadForYear > maxWorkload) {
+                    System.out.println("!!!!!!!!!!!!!!!!Workload exceeded for year " + year + " and participant " + participant.getName() );
                     return false; // Workload exceeded for this year and participant
                 }
             }
         }
+        System.out.println("Workload not exceeded for any year and participant!!!!!!!!");
         return true; // Workload not exceeded for any year and participant
     }
+
 
 
 
