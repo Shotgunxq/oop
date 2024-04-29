@@ -76,33 +76,22 @@ public class GrantImplementation implements GrantInterface {
 
 
     @Override
-    //TODO cely tento bolo prepisane podla konzultacie lebo ja uz mam ten projekt ktory dostal peniaze a nemusim
-    // pre iterovat cez vsetky projekty iba ten jeden projekt a jeho roky ci nieco podobne
     public int getBudgetForProject(ProjectInterface project) {
-        // This method could be implemented based on specific evaluation criteria
-        // For demonstration purposes, assume equal distribution among funded projects
         if (!registeredProjects.contains(project)) {
-            return 0;
-        }
-        //TODO: ci ten projekt je zaregistrovany v gratne,,,,, ak v tam je tak pridat
-        //TODO roky projektu iterovat
-        int fundedProjects = 0;
-
-        for (int y = project.getStartingYear(); y <= project.getEndingYear(); y++) {
-            // Check if any project has a budget (doesn't matter which)
-            if (y > 0) { //TODO always true
-                //TODO: kolko ma ten projekt  nie plus plus a po prvom iteracii sa breakne
-                fundedProjects++;
-                break; // Optional: Once one funded project is found, we can break the loop
-            }
+            return 0; // Project is not registered, return 0 budget
         }
 
-        if (fundedProjects == 0) {
-            return 0;
-        }
+        // Assume equal distribution among funded projects
+        // Calculate the number of years the project is funded
+        int fundedYears = project.getEndingYear() - project.getStartingYear() + 1;
 
-        int projectBudget = budget / fundedProjects;
-        return projectBudget;
+        // Ensure at least one funded year
+        fundedYears = Math.max(fundedYears, 1);
+
+        // Calculate the budget for each funded year
+        int projectBudgetPerYear = budget / fundedYears;
+
+        return projectBudgetPerYear;
     }
     @Override
     public boolean registerProject(ProjectInterface project) {
@@ -142,6 +131,7 @@ public class GrantImplementation implements GrantInterface {
                 eligibleProjects.add(project);
             } else {
                 project.setBudgetForYear(project.getStartingYear(), 0); // Set budget to 0 for ineligible projects
+
             }
         }
 
@@ -207,12 +197,14 @@ public class GrantImplementation implements GrantInterface {
         // Iterate over all grants issued by the agency
         for (GrantInterface grant : allGrants) {
             // Check if the grant is relevant to the project year
-            if (grant.getYear() <= project.getStartingYear()) {
+            //TODO kontrolovat state ze ci je closed ale well nejde to
+            if (grant.getYear() <= project.getStartingYear() ) {
+
                 // Iterate over all registered projects in the grant
                 for (ProjectInterface proj : grant.getRegisteredProjects()) {
                     // Check if the project overlaps with the proposed project's duration
                     if (proj.getStartingYear() < project.getStartingYear() + project.getDuration() &&
-                            proj.getStartingYear() + proj.getDuration() > project.getStartingYear()) {
+                            proj.getStartingYear() + proj.getDuration() > project.getStartingYear() ) {
                         // Get all participants of the overlapping project
                         Set<PersonInterface> overlappingParticipants = proj.getAllParticipants();
                         // Iterate over each participant of the overlapping project
